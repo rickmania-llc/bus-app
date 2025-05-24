@@ -1,0 +1,83 @@
+classDiagram
+    direction LR
+
+    class Route {
+        -id: ObjectId
+        -startTime: Date
+        -finishTime: Date
+        -isTemplate: Boolean
+        -isPickUp: Boolean
+        -startLocation: Point
+        -endLocation: Point
+        -calendarDates: Date[]
+    }
+
+    class Stop {
+        -id: ObjectId
+        -expectedTime: Date
+        -actualTime: Date?
+        -isTemplate: Boolean
+        -location: Point
+        -expectedStudentIds: ObjectId[]
+    }
+
+    class DropOffPickup {
+        -id: ObjectId
+        -timestamp: Date
+        -wasPresent: Boolean
+    }
+
+    class Guardian {
+        -id: ObjectId
+        -name: String
+        -pictureUrl: String
+        %% Guardian.students: [{isPrimary: Boolean, studentId: ObjectId}]
+        %% This structure is represented by the StudentAssociationDetails class and relationships
+    }
+
+    class StudentAssociationDetails {
+        +isPrimary: Boolean
+        %% Implicitly references a Student via studentId within Guardian's data structure
+    }
+
+    class Driver {
+        -id: ObjectId
+        -name: String
+        -dob: Date
+        -hireDate: Date
+        -pictureUrl: String
+    }
+
+    class Student {
+        -id: ObjectId
+        -name: String
+        -dob: Date
+        -address: String
+        -pictureUrl: String
+    }
+
+    class RouteLocation {
+        -id: ObjectId
+        -location: Point
+        -time: Date
+        -speed: Number
+        -direction: Number
+        -speedLimit: Number
+        %% routeId: ObjectId field implicitly exists here to link back to Route
+    }
+
+    %% --- Relationships ---
+
+    Route "1" o-- "*" Stop : comprises (via stopIds)
+    Route "*" o-- "0..1" Driver : driven_by (via Route.driverId)
+    RouteLocation "*" o-- "1" Route : logged_for (via RouteLocation.routeId)
+    Route "1" o-- "0..1" RouteLocation : latest_tracked_at (via Route.currentLocationId)
+
+    DropOffPickup "*" o-- "1" Stop : occurs_at (via DropOffPickup.stopId)
+    Stop "1" o-- "*" Student : expects (via Stop.expectedStudentIds)
+
+    DropOffPickup "*" o-- "1" Student : involves (via DropOffPickup.studentId)
+    DropOffPickup "*" o-- "0..1" Guardian : verified_by (via DropOffPickup.verifiedGuardianId)
+
+    Guardian "1" o-- "*" StudentAssociationDetails : has_student_details
+    StudentAssociationDetails "*" --o "1" Student : concerns_student
