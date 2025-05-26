@@ -5,6 +5,9 @@
 export interface Driver {
   /** Driver's full name */
   name: string;
+
+  /** Driver's government  ID number */
+  govId: string;
   
   /** Date of birth (Unix timestamp in milliseconds) */
   dob: number;

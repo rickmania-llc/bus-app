@@ -5,6 +5,9 @@
 export interface Guardian {
   /** Guardian's full name */
   name: string;
+
+  /** Guardian's government ID number */
+  govId: string;
   
   /** URL to guardian's profile picture */
   pictureUrl: string;

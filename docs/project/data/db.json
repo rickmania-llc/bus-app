@@ -2,6 +2,7 @@
     "drivers": {
       "driver_uuid_1": {
         "name": "Driver Name",
+        "govId": "1234567890",
         "dob": 1678886400000,
         "hireDate": 1710508800000,
         "pictureUrl": "https://example.com/driver_pic.jpg"
@@ -24,6 +25,7 @@
     "guardians": {
       "guardian_uuid_1": {
         "name": "Guardian Name",
+        "govId": "1234567890",
         "pictureUrl": "https://example.com/guardian_pic.jpg",
         "students": {
           "student_uuid_1": {
