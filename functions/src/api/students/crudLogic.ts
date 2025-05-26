@@ -3,6 +3,56 @@ import { database } from 'firebase-admin';
 import { Student } from '../../../../common/types';
 
 /**
+ * Parses date of birth input and returns a Unix timestamp
+ * Accepts either a Unix timestamp (number) or MM/DD/YYYY format string
+ */
+const parseDateOfBirth = (dob: any): { isValid: boolean, timestamp?: number, error?: string } => {
+  // If it's already a number, validate it as a timestamp
+  if (typeof dob === 'number') {
+    if (dob <= 0) {
+      return { isValid: false, error: 'Date of birth timestamp must be positive' };
+    }
+    return { isValid: true, timestamp: dob };
+  }
+
+  // If it's a string, try to parse as MM/DD/YYYY format
+  if (typeof dob === 'string') {
+    const datePattern = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
+    const match = dob.match(datePattern);
+    
+    if (!match) {
+      return { isValid: false, error: 'Date format must be MM/DD/YYYY (e.g., "01/26/1981" or "2/5/1990")' };
+    }
+
+    const month = parseInt(match[1], 10);
+    const day = parseInt(match[2], 10);
+    const year = parseInt(match[3], 10);
+
+    // Basic validation
+    if (month < 1 || month > 12) {
+      return { isValid: false, error: 'Month must be between 1 and 12' };
+    }
+    if (day < 1 || day > 31) {
+      return { isValid: false, error: 'Day must be between 1 and 31' };
+    }
+    if (year < 1900 || year > new Date().getFullYear()) {
+      return { isValid: false, error: 'Year must be between 1900 and current year' };
+    }
+
+    // Create Date object and validate it exists (handles invalid dates like Feb 30)
+    const dateObj = new Date(year, month - 1, day); // month is 0-indexed in Date constructor
+    if (dateObj.getFullYear() !== year || dateObj.getMonth() !== month - 1 || dateObj.getDate() !== day) {
+      return { isValid: false, error: 'Invalid date (e.g., Feb 30 does not exist)' };
+    }
+
+    const timestamp = dateObj.getTime();
+    return { isValid: true, timestamp };
+  }
+
+  return { isValid: false, error: 'Date of birth must be a number (timestamp) or string in MM/DD/YYYY format' };
+};
+
+/**
  * Creates a new student in the Firebase Realtime Database
  */
 export const createStudent = async (req: Request, studentRef: database.Reference): Promise<{success: boolean, message: string}> => {
@@ -23,8 +73,9 @@ export const createStudent = async (req: Request, studentRef: database.Reference
   }
 
   // Additional validation for dob (date of birth should be a valid timestamp)
-  if (typeof body.dob !== 'number' || body.dob <= 0) {
-    return {success: false, message: 'Date of birth must be a valid timestamp'};
+  const dobValidation = parseDateOfBirth(body.dob);
+  if (!dobValidation.isValid) {
+    return {success: false, message: dobValidation.error!};
   }
 
   // Additional validation for pictureUrl if provided (basic URL format check)
@@ -49,7 +100,7 @@ export const createStudent = async (req: Request, studentRef: database.Reference
   // Populating the Student object to add
   const studentObject: Student = {
     name: body.name,
-    dob: body.dob,
+    dob: dobValidation.timestamp!,
     address: body.address,
     // Set pictureUrl to null if not provided, otherwise use the provided value
     pictureUrl: (body.pictureUrl !== undefined && body.pictureUrl !== '') ? body.pictureUrl : null
@@ -96,10 +147,11 @@ export const updateStudent = async (req: Request, studentRef: database.Reference
   }
 
   if (req.body.dob !== undefined) {
-    if (typeof req.body.dob !== 'number' || req.body.dob <= 0) {
-      return {success: false, message: 'Date of birth must be a valid timestamp'};
+    const dobValidation = parseDateOfBirth(req.body.dob);
+    if (!dobValidation.isValid) {
+      return {success: false, message: dobValidation.error!};
     }
-    updateObj.dob = req.body.dob;
+    updateObj.dob = dobValidation.timestamp!;
   }
 
   if (req.body.address !== undefined) {
