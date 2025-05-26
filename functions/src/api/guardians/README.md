@@ -15,7 +15,7 @@ All requests should include the `Content-Type: application/json` header.
 The Guardian object has the following structure:
 - `name` (string, required): Guardian's full name
 - `govId` (string, required): Guardian's government ID number (must be unique)
-- `pictureUrl` (string, required): URL to guardian's profile picture
+- `pictureUrl` (string or null, optional): URL to guardian's profile picture
 - `students` (array or null, optional): Array of student references
 
 ### Students Array Format
@@ -51,7 +51,7 @@ Creates a new guardian record in the Firebase Realtime Database.
     {
         "name": "string",
         "govId": "string",
-        "pictureUrl": "string",
+        "pictureUrl": "string" | null,
         "students": [
             {
                 "id": "string",
@@ -61,8 +61,8 @@ Creates a new guardian record in the Firebase Realtime Database.
     }
     ```
 
-*   **Required Fields:** `name`, `govId`, `pictureUrl`
-*   **Optional Fields:** `students` (if not provided, will be saved as empty object)
+*   **Required Fields:** `name`, `govId`
+*   **Optional Fields:** `pictureUrl` (if not provided, will be saved as `null`), `students` (if not provided, will be saved as empty object)
 
 **Example using curl (with students):**
 
@@ -87,20 +87,19 @@ curl -X POST \
   http://localhost:5001/bus-app-2025/us-central1/guardianCrud
 ```
 
-**Example without students:**
+**Example without pictureUrl:**
 
 ```bash
 curl -X POST \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Jane Doe",
-    "govId": "987654321",
-    "pictureUrl": "https://example.com/jane.jpg"
+    "govId": "987654321"
   }' \
   http://localhost:5001/bus-app-2025/us-central1/guardianCrud
 ```
 
-**Example with null students:**
+**Example with null pictureUrl:**
 
 ```bash
 curl -X POST \
@@ -108,7 +107,7 @@ curl -X POST \
   -d '{
     "name": "Bob Johnson",
     "govId": "555666777",
-    "pictureUrl": "https://example.com/bob.jpg",
+    "pictureUrl": null,
     "students": null
   }' \
   http://localhost:5001/bus-app-2025/us-central1/guardianCrud
@@ -127,7 +126,7 @@ Updates an existing guardian record based on the provided guardian ID.
     {
         "name"?: "string",
         "govId"?: "string",
-        "pictureUrl"?: "string",
+        "pictureUrl"?: "string" | null,
         "students"?: [
             {
                 "id": "string",
@@ -204,7 +203,9 @@ curl -X DELETE http://localhost:5001/bus-app-2025/us-central1/guardianCrud/GUAhk
 ### Required Field Validation
 - `name`: Cannot be empty or null
 - `govId`: Cannot be empty or null, must be unique across all guardians
-- `pictureUrl`: Cannot be empty or null, must be a valid HTTP/HTTPS URL
+
+### Optional Field Validation
+- `pictureUrl`: Can be null, empty string, or a valid HTTP/HTTPS URL. Only validated for URL format when provided.
 
 ### Students Array Validation
 - Each student object must have `id` (string) and `isPrimaryGuardian` (boolean)
@@ -212,7 +213,7 @@ curl -X DELETE http://localhost:5001/bus-app-2025/us-central1/guardianCrud/GUAhk
 - Students array can be null, empty array, or array of valid student objects
 
 ### URL Validation
-- `pictureUrl` must match pattern: `^https?:\/\/.+`
+- `pictureUrl` must match pattern: `^https?:\/\/.+` (only when provided)
 
 ## Error Responses
 

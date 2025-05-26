@@ -10,7 +10,7 @@ export interface Guardian {
   govId: string;
   
   /** URL to guardian's profile picture */
-  pictureUrl: string;
+  pictureUrl: string | null;
   
   /** Students this guardian is responsible for */
   students: {

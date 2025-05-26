@@ -59,7 +59,8 @@ export const createGuardian = async (
   console.log(req.body);
   
   const body = req.body;
-  const requiredFields = ['name', 'govId', 'pictureUrl'];
+  // pictureUrl is now optional
+  const requiredFields = ['name', 'govId'];
   
   // Basic validation for required fields
   for (const field of requiredFields) {
@@ -70,10 +71,12 @@ export const createGuardian = async (
     }
   }
 
-  // Additional validation for pictureUrl (basic URL format check)
-  const urlPattern = /^https?:\/\/.+/;
-  if (!urlPattern.test(body.pictureUrl)) {
-    return {success: false, message: 'Picture URL must be a valid HTTP/HTTPS URL'};
+  // Additional validation for pictureUrl if provided (basic URL format check)
+  if (body.pictureUrl !== undefined && body.pictureUrl !== null && body.pictureUrl !== '') {
+    const urlPattern = /^https?:\/\/.+/;
+    if (!urlPattern.test(body.pictureUrl)) {
+      return {success: false, message: 'Picture URL must be a valid HTTP/HTTPS URL if provided'};
+    }
   }
 
   // Generating random ID <GUA><5 random Char><UTC Hex>
@@ -97,7 +100,8 @@ export const createGuardian = async (
   const guardianObject: Guardian = {
     name: body.name,
     govId: body.govId,
-    pictureUrl: body.pictureUrl,
+    // Set pictureUrl to null if not provided, otherwise use the provided value
+    pictureUrl: (body.pictureUrl !== undefined && body.pictureUrl !== '') ? body.pictureUrl : null,
     students: studentsValidation.studentsObject || {}
   };
 
@@ -154,13 +158,15 @@ export const updateGuardian = async (
 
   if (req.body.pictureUrl !== undefined) {
     if (req.body.pictureUrl === null || req.body.pictureUrl === '') {
-      return {success: false, message: 'Picture URL cannot be empty'};
+      // Allow setting pictureUrl to null
+      updateObj.pictureUrl = null;
+    } else {
+      const urlPattern = /^https?:\/\/.+/;
+      if (!urlPattern.test(req.body.pictureUrl)) {
+        return {success: false, message: 'Picture URL must be a valid HTTP/HTTPS URL'};
+      }
+      updateObj.pictureUrl = req.body.pictureUrl;
     }
-    const urlPattern = /^https?:\/\/.+/;
-    if (!urlPattern.test(req.body.pictureUrl)) {
-      return {success: false, message: 'Picture URL must be a valid HTTP/HTTPS URL'};
-    }
-    updateObj.pictureUrl = req.body.pictureUrl;
   }
 
   // Handle students update logic:
