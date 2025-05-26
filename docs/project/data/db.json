@@ -1,7 +1,6 @@
 {
     "drivers": {
       "driver_uuid_1": {
-        "id": "driver_uuid_1",
         "name": "Driver Name",
         "dob": 1678886400000,
         "hireDate": 1710508800000,
@@ -10,14 +9,12 @@
     },
     "students": {
       "student_uuid_1": {
-        "id": "student_uuid_1",
         "name": "Student Name",
         "dob": 1647350400000,
         "address": "123 Main St, Anytown",
         "pictureUrl": "https://example.com/student_pic.jpg"
       },
       "student_uuid_3": {
-        "id": "student_uuid_3",
         "name": "Another Student",
         "dob": 1647350500000,
         "address": "456 Oak Rd, Anytown",
@@ -26,7 +23,6 @@
     },
     "guardians": {
       "guardian_uuid_1": {
-        "id": "guardian_uuid_1",
         "name": "Guardian Name",
         "pictureUrl": "https://example.com/guardian_pic.jpg",
         "students": {
@@ -43,7 +39,6 @@
     },
     "stops": {
       "stop_uuid_1": {
-        "id": "stop_uuid_1",
         "expectedTime": 1716559200000,
         "actualTime": 1716559260000,
         "isTemplate": false,
@@ -67,7 +62,6 @@
     },
     "routes": {
       "route_uuid_1": {
-        "id": "route_uuid_1",
         "startTime": 1716557400000,
         "finishTime": 1716561000000,
         "isTemplate": false,
@@ -88,7 +82,6 @@
         "currentLocationId": "routeloc_uuid_some_active_one"
       },
       "route_template_1": {
-        "id": "route_template_1",
         "startTime": null,
         "finishTime": null,
         "isTemplate": true,
@@ -105,7 +98,6 @@
     },
     "routeLocations": {
       "routeloc_uuid_1": {
-        "id": "routeloc_uuid_1",
         "location": {
           "lat": 34.0522,
           "lon": -118.2437
@@ -118,7 +110,6 @@
         "speedLimit": 50.0
       },
       "routeloc_uuid_some_active_one": {
-        "id": "routeloc_uuid_some_active_one",
         "location": {
           "lat": 34.0530,
           "lon": -118.2450
