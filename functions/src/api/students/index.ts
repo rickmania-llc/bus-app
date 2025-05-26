@@ -19,6 +19,7 @@ export const crud = async (req: Request, res: any): Promise<void> => {
 
   const db = admin.database();
   const studentRef = db.ref('students');
+  const guardianRef = db.ref('guardians');
 
   try {
     switch (req.method) {
@@ -51,7 +52,7 @@ export const crud = async (req: Request, res: any): Promise<void> => {
 
       case 'DELETE':
         console.log('Deleting student...');
-        const delRes = await deleteStudent(req, studentRef);
+        const delRes = await deleteStudent(req, studentRef, guardianRef);
         if (delRes.success) {
           res.status(200).json({ message: delRes.message });
         } else {

@@ -187,7 +187,7 @@ export const updateStudent = async (req: Request, studentRef: database.Reference
 /**
  * Deletes a student from the Firebase Realtime Database
  */
-export const deleteStudent = async (req: Request, studentRef: database.Reference): Promise<{success: boolean, message: string}> => {
+export const deleteStudent = async (req: Request, studentRef: database.Reference, guardianRef?: database.Reference): Promise<{success: boolean, message: string}> => {
   if (req.params[0] === '') {
     return {success: false, message: 'No Student ID parameter'};
   }
@@ -198,6 +198,45 @@ export const deleteStudent = async (req: Request, studentRef: database.Reference
     return {success: false, message: 'Student not found'};
   }
 
-  await studentRef.child(req.params[0]).remove();
-  return {success: true, message: `Student ${req.params[0]} deleted`};
+  const studentId = req.params[0];
+
+  // Remove student from database
+  await studentRef.child(studentId).remove();
+
+  // If guardianRef is provided, remove this student from all guardians that reference them
+  if (guardianRef) {
+    await removeStudentFromGuardians(studentId, guardianRef);
+  }
+
+  return {success: true, message: `Student ${studentId} deleted`};
+};
+
+/**
+ * Utility function to remove a deleted student from all guardians that reference them
+ */
+export const removeStudentFromGuardians = async (
+  studentId: string,
+  guardianRef: database.Reference
+): Promise<void> => {
+  // Get all guardians
+  const snapshot = await guardianRef.once('value');
+  
+  if (snapshot.val() !== null) {
+    const guardians = snapshot.val();
+    const updates: any = {};
+    
+    for (const guardianId in guardians) {
+      const guardian = guardians[guardianId];
+      if (guardian.students && guardian.students[studentId]) {
+        // Remove the student reference from this guardian
+        updates[`${guardianId}/students/${studentId}`] = null;
+      }
+    }
+    
+    // Apply all updates at once
+    if (Object.keys(updates).length > 0) {
+      await guardianRef.update(updates);
+      console.log(`Removed student ${studentId} from ${Object.keys(updates).length} guardian(s)`);
+    }
+  }
 }; 
