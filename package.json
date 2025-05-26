@@ -1,0 +1,13 @@
+{
+  "name": "bus-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "yarn workspace functions run build",
+    "emulators": "firebase emulators:start",
+    "clean": "rm -rf functions/lib && rm -f common/types/*.js common/types/*.js.map"
+  },
+  "workspaces": [
+    "functions"
+  ]
+} 
