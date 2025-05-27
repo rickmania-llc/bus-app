@@ -16,5 +16,5 @@ export interface Driver {
   hireDate: number;
   
   /** URL to driver's profile picture */
-  pictureUrl: string;
+  pictureUrl: string | null;
 } 

@@ -1,12 +1,10 @@
 import {onRequest} from "firebase-functions/v2/https";
-import * as logger from "firebase-functions/logger";
-import { studentIndex, guardianIndex } from './api/index';
+import { studentIndex, guardianIndex, driverIndex } from './api/index';
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
 
 export const helloWorld = onRequest((request, response) => {
-  logger.info("Hello logs!", {structuredData: true});
   response.send("Hello from Firebase!");
 });
 
@@ -18,4 +16,9 @@ export const studentCrud = onRequest(async (req, res) => {
 // Guardian CRUD operations
 export const guardianCrud = onRequest(async (req, res) => {
   return await guardianIndex.guardianIndex(req, res);
+});
+
+// Driver CRUD operations
+export const driverCrud = onRequest(async (req, res) => {
+  return await driverIndex.driverIndex(req, res);
 });
