@@ -10,21 +10,22 @@ classDiagram
         -startLocation: Point
         -endLocation: Point
         -calendarDates: Date[]
+        -stops: EmbeddedStop[]
     }
 
-    class Stop {
-        -id: ObjectId
+    class EmbeddedStop {
         -expectedTime: Date
         -actualTime: Date?
         -isTemplate: Boolean
         -location: Point
-        -expectedStudentIds: ObjectId[]
+        -students: StudentStatusMap
     }
 
-    class DropOffPickup {
-        -id: ObjectId
-        -timestamp: Date
-        -wasPresent: Boolean
+    class StudentStatusMap {
+        +reference: Boolean
+        +droppedOrPicked: Boolean
+        +guardianVerified: Boolean
+        %% Keys are student_uuid, values are the above status object
     }
 
     class Guardian {
@@ -68,16 +69,13 @@ classDiagram
 
     %% --- Relationships ---
 
-    Route "1" o-- "*" Stop : comprises (via stopIds)
+    Route "1" *-- "*" EmbeddedStop : contains
+    EmbeddedStop "1" *-- "1" StudentStatusMap : tracks_students
     Route "*" o-- "0..1" Driver : driven_by (via Route.driverId)
     RouteLocation "*" o-- "1" Route : logged_for (via RouteLocation.routeId)
     Route "1" o-- "0..1" RouteLocation : latest_tracked_at (via Route.currentLocationId)
 
-    DropOffPickup "*" o-- "1" Stop : occurs_at (via DropOffPickup.stopId)
-    Stop "1" o-- "*" Student : expects (via Stop.expectedStudentIds)
-
-    DropOffPickup "*" o-- "1" Student : involves (via DropOffPickup.studentId)
-    DropOffPickup "*" o-- "0..1" Guardian : verified_by (via DropOffPickup.verifiedGuardianId)
+    StudentStatusMap "*" --o "*" Student : refers_to (via student_uuid keys)
 
     Guardian "1" o-- "*" StudentAssociationDetails : has_student_details
     StudentAssociationDetails "*" --o "1" Student : concerns_student

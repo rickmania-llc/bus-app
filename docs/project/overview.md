@@ -79,20 +79,11 @@ The Bus App caters to four primary user roles, each with specific functionalitie
 
 The system's data is structured around several key entities, as depicted in the provided class diagram:
 
-* **`Route`**: Represents a specific bus journey.
+* **`Route`**: Represents a specific bus journey with embedded stop information.
     * Attributes include an `id`[cite: 1], `startTime`[cite: 1], `finishTime`[cite: 1], `isTemplate` flag[cite: 1], `isPickUp` flag[cite: 1], `startLocation`[cite: 1], `endLocation`[cite: 1], and `calendarDates` for scheduled routes[cite: 1].
-    * A route `comprises` multiple `Stop` instances (via `stopIds`)[cite: 4].
+    * Contains an embedded `stops` array where each stop object includes `expectedTime`, `actualTime`, `isTemplate`, `location`, and a nested `students` map that tracks each student's status at that stop with `reference`, `droppedOrPicked`, and `guardianVerified` fields.
     * A route is `driven_by` zero or one `Driver` (via `Route.driverId`)[cite: 4].
     * A route can have a `latest_tracked_at` location, linking to a `RouteLocation` (via `Route.currentLocationId`)[cite: 4].
-
-* **`Stop`**: Defines a specific point along a route where students are picked up or dropped off.
-    * Attributes include an `id`[cite: 1], `expectedTime`[cite: 1], `actualTime` (optional)[cite: 1], `isTemplate` flag[cite: 1, 2], `location` (Point)[cite: 1], and `expectedStudentIds`[cite: 1].
-
-* **`DropOffPickup`**: Records the event of a student being picked up or dropped off at a stop.
-    * Attributes include an `id`[cite: 1], `timestamp`[cite: 1], and `wasPresent`[cite: 1].
-    * This event `occurs_at` one `Stop` (via `DropOffPickup.stopId`)[cite: 4].
-    * It `involves` one `Student` (via `DropOffPickup.studentId`)[cite: 4].
-    * It can be `verified_by` zero or one `Guardian` (via `DropOffPickup.verifiedGuardianId`)[cite: 4].
 
 * **`Guardian`**: Represents a parent or guardian of a student.
     * Attributes include an `id`[cite: 1], `name`[cite: 1], and `pictureUrl`[cite: 1].
@@ -120,7 +111,7 @@ The system's data is structured around several key entities, as depicted in the 
 * `String`: For textual data like names and addresses[cite: 1].
 * `Number`: For numerical data like speed and direction[cite: 1].
 * `Date[]`: An array of dates, used in `Route.calendarDates`[cite: 1].
-* `ObjectId[]`: An array of ObjectIds, used in `Stop.expectedStudentIds`[cite: 1].
+* `ObjectId[]`: An array of ObjectIds, used in embedded stop student tracking[cite: 1].
 
 ---
 
