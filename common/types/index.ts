@@ -11,4 +11,5 @@
 // Core entity interfaces
 export type { Guardian } from './Guardian';
 export type { Student } from './Student';
-export type { Driver } from './Driver'; 
+export type { Driver } from './Driver';
+export type { Route, Location, EmbeddedStop, StudentStatus } from './Route'; 

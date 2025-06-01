@@ -1,5 +1,5 @@
 import {onRequest} from "firebase-functions/v2/https";
-import { studentIndex, guardianIndex, driverIndex } from './api/index';
+import { studentIndex, guardianIndex, driverIndex, routeIndex } from './api/index';
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
@@ -21,4 +21,9 @@ export const guardianCrud = onRequest(async (req, res) => {
 // Driver CRUD operations
 export const driverCrud = onRequest(async (req, res) => {
   return await driverIndex.driverIndex(req, res);
+});
+
+// Route CRUD operations
+export const routeCrud = onRequest(async (req, res) => {
+  return await routeIndex.routeIndex(req, res);
 });
