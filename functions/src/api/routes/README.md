@@ -8,7 +8,11 @@ This document provides a quick reference for the Route CRUD API endpoints implem
 
 **Headers:**
 
-All requests should include the `Content-Type: application/json` header.
+All requests MUST include:
+- `Content-Type: application/json`
+- `Tenant: <tenant-name>` - Required for multi-tenancy support
+
+The `Tenant` header determines which Firebase database instance to use. The database URL format is `https://bus-app-2025-<tenant-name>.firebaseio.com`.
 
 ## Data Structure Overview
 
@@ -72,6 +76,7 @@ Creates a new route record in the Firebase Realtime Database.
 ```bash
 curl -X POST \
   -H "Content-Type: application/json" \
+  -H "Tenant: demo" \
   -d '{
     "isTemplate": true,
     "isPickUp": true,
@@ -101,6 +106,7 @@ curl -X POST \
 ```bash
 curl -X POST \
   -H "Content-Type: application/json" \
+  -H "Tenant: demo" \
   -d '{
     "isTemplate": false,
     "isPickUp": true,
@@ -164,6 +170,7 @@ Updates an existing route record based on the provided route ID.
 ```bash
 curl -X PUT \
   -H "Content-Type: application/json" \
+  -H "Tenant: demo" \
   -d '{
     "startTime": 1716558000000,
     "finishTime": 1716562000000
@@ -176,6 +183,7 @@ curl -X PUT \
 ```bash
 curl -X PUT \
   -H "Content-Type: application/json" \
+  -H "Tenant: demo" \
   -d '{
     "stops": [
         {
@@ -201,6 +209,7 @@ curl -X PUT \
 ```bash
 curl -X PUT \
   -H "Content-Type: application/json" \
+  -H "Tenant: demo" \
   -d '{
     "driverId": "DRI67890def"
   }' \
@@ -212,6 +221,7 @@ curl -X PUT \
 ```bash
 curl -X PUT \
   -H "Content-Type: application/json" \
+  -H "Tenant: demo" \
   -d '{
     "stops": []
   }' \
@@ -230,7 +240,9 @@ Deletes a route record based on the provided route ID.
 **Example using curl:**
 
 ```bash
-curl -X DELETE http://localhost:5001/bus-app-2025/us-central1/routeCrud/ROUhk0hi1970c5f744a
+curl -X DELETE \
+  -H "Tenant: demo" \
+  http://localhost:5001/bus-app-2025/us-central1/routeCrud/ROUhk0hi1970c5f744a
 ```
 
 ## Validation Rules

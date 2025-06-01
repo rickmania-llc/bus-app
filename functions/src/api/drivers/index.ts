@@ -1,9 +1,14 @@
 import { onRequest } from 'firebase-functions/v2/https';
-import { database } from 'firebase-admin';
+import { getDatabaseWithUrl } from 'firebase-admin/database';
 import * as admin from 'firebase-admin';
 import { createDriver, updateDriver, deleteDriver } from './crudLogic';
 
 export const driverIndex = onRequest(async (req: any, res: any) => {
+  // Set CORS headers
+  res.header('Content-Type', 'application/json');
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Content-Type,Tenant');
+
   console.log('Driver API endpoint called');
   console.log('Method:', req.method);
   console.log('URL:', req.url);
@@ -14,14 +19,29 @@ export const driverIndex = onRequest(async (req: any, res: any) => {
     admin.initializeApp();
   }
 
+  // Get tenant-specific database
+  const tenant = req.headers.tenant as string;
+  if (!tenant) {
+    res.status(400).json({ message: 'Tenant header is required' });
+    return;
+  }
+
   // Get Firebase database references
-  const driverRef = database().ref('drivers');
-  const routeRef = database().ref('routes');
+  const db = getDatabaseWithUrl(`https://bus-app-2025-${tenant}.firebaseio.com`);
+  const driverRef = db.ref('drivers');
+  const routeRef = db.ref('routes');
 
   try {
     let result: {success: boolean, message: string};
 
     switch (req.method) {
+      case 'OPTIONS':
+        res.set('Access-Control-Allow-Methods', 'POST,PUT,DELETE');
+        res.set('Access-Control-Allow-Origin', '*');
+        res.set('Access-Control-Allow-Headers', 'Content-Type,Tenant');
+        res.status(204).send('');
+        return;
+
       case 'POST':
         // Create driver
         result = await createDriver(req, driverRef);

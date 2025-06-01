@@ -82,3 +82,6 @@ common/types/*.js.map
 .idea/
 ref
 .claude
+
+# Claude AI memory file
+CLAUDE.md

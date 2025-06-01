@@ -8,7 +8,11 @@ This document provides a quick reference for the Student CRUD API endpoints impl
 
 **Headers:**
 
-All requests should include the `Content-Type: application/json` header.
+All requests MUST include:
+- `Content-Type: application/json`
+- `Tenant: <tenant-name>` - Required for multi-tenancy support
+
+The `Tenant` header determines which Firebase database instance to use. The database URL format is `https://bus-app-2025-<tenant-name>.firebaseio.com`.
 
 ## Date Format Support
 
@@ -43,6 +47,7 @@ Creates a new student record in the Firebase Realtime Database.
 ```bash
 curl -X POST \
   -H "Content-Type: application/json" \
+  -H "Tenant: demo" \
   -d '{
     "name": "John Doe",
     "dob": 1609459200000,
@@ -57,6 +62,7 @@ curl -X POST \
 ```bash
 curl -X POST \
   -H "Content-Type: application/json" \
+  -H "Tenant: demo" \
   -d '{
     "name": "Jane Smith",
     "dob": "01/26/1981",
@@ -70,6 +76,7 @@ curl -X POST \
 ```bash
 curl -X POST \
   -H "Content-Type: application/json" \
+  -H "Tenant: demo" \
   -d '{
     "name": "Bob Johnson",
     "dob": "2/5/1990",
@@ -103,6 +110,7 @@ Updates an existing student record based on the provided student ID.
 ```bash
 curl -X PUT \
   -H "Content-Type: application/json" \
+  -H "Tenant: demo" \
   -d '{
     "dob": "12/25/1985",
     "address": "789 Pine St, Oldtown, USA"
@@ -115,6 +123,7 @@ curl -X PUT \
 ```bash
 curl -X PUT \
   -H "Content-Type: application/json" \
+  -H "Tenant: demo" \
   -d '{
     "dob": 1577836800000,
     "pictureUrl": null
@@ -134,5 +143,7 @@ Deletes a student record based on the provided student ID.
 **Example using curl:**
 
 ```bash
-curl -X DELETE http://localhost:5001/bus-app-2025/us-central1/studentCrud/STUhk0hi1970c5f744a
+curl -X DELETE \
+  -H "Tenant: demo" \
+  http://localhost:5001/bus-app-2025/us-central1/studentCrud/STUhk0hi1970c5f744a
 ``` 

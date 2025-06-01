@@ -8,7 +8,11 @@ This document provides a quick reference for the Driver CRUD API endpoints imple
 
 **Headers:**
 
-All requests should include the `Content-Type: application/json` header.
+All requests MUST include:
+- `Content-Type: application/json`
+- `Tenant: <tenant-name>` - Required for multi-tenancy support
+
+The `Tenant` header determines which Firebase database instance to use. The database URL format is `https://bus-app-2025-<tenant-name>.firebaseio.com`.
 
 ## Driver Data Structure
 
@@ -51,6 +55,7 @@ Creates a new driver record in the Firebase Realtime Database.
 ```bash
 curl -X POST \
   -H "Content-Type: application/json" \
+  -H "Tenant: demo" \
   -d '{
     "name": "John Smith",
     "govId": "DL123456789",
@@ -66,6 +71,7 @@ curl -X POST \
 ```bash
 curl -X POST \
   -H "Content-Type: application/json" \
+  -H "Tenant: demo" \
   -d '{
     "name": "Jane Doe",
     "govId": "DL987654321",
@@ -80,6 +86,7 @@ curl -X POST \
 ```bash
 curl -X POST \
   -H "Content-Type: application/json" \
+  -H "Tenant: demo" \
   -d '{
     "name": "Bob Johnson",
     "govId": "DL555666777",
@@ -120,6 +127,7 @@ Updates an existing driver record based on the provided driver ID.
 ```bash
 curl -X PUT \
   -H "Content-Type: application/json" \
+  -H "Tenant: demo" \
   -d '{
     "name": "John Smith Jr.",
     "hireDate": "01/15/2022"
@@ -132,6 +140,7 @@ curl -X PUT \
 ```bash
 curl -X PUT \
   -H "Content-Type: application/json" \
+  -H "Tenant: demo" \
   -d '{
     "govId": "DL111222333"
   }' \
@@ -143,6 +152,7 @@ curl -X PUT \
 ```bash
 curl -X PUT \
   -H "Content-Type: application/json" \
+  -H "Tenant: demo" \
   -d '{
     "pictureUrl": null
   }' \
@@ -163,7 +173,9 @@ Deletes a driver record based on the provided driver ID.
 **Example using curl:**
 
 ```bash
-curl -X DELETE http://localhost:5001/bus-app-2025/us-central1/driverCrud/DRIhk0hi1970c5f744a
+curl -X DELETE \
+  -H "Tenant: demo" \
+  http://localhost:5001/bus-app-2025/us-central1/driverCrud/DRIhk0hi1970c5f744a
 ```
 
 ## Validation Rules

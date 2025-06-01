@@ -1,5 +1,6 @@
 import { Request } from 'firebase-functions/v2/https';
 import * as admin from 'firebase-admin';
+import { getDatabaseWithUrl } from 'firebase-admin/database';
 import { createStudent, updateStudent, deleteStudent } from './crudLogic';
 
 /**
@@ -10,14 +11,21 @@ export const crud = async (req: Request, res: any): Promise<void> => {
   // Set CORS headers
   res.header('Content-Type', 'application/json');
   res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  res.header('Access-Control-Allow-Headers', 'Content-Type,Tenant');
 
   // Initialize Firebase Admin if not already initialized
   if (!admin.apps.length) {
     admin.initializeApp();
   }
 
-  const db = admin.database();
+  // Get tenant-specific database
+  const tenant = req.headers.tenant as string;
+  if (!tenant) {
+    res.status(400).json({ message: 'Tenant header is required' });
+    return;
+  }
+
+  const db = getDatabaseWithUrl(`https://bus-app-2025-${tenant}.firebaseio.com`);
   const studentRef = db.ref('students');
   const guardianRef = db.ref('guardians');
 
@@ -26,7 +34,7 @@ export const crud = async (req: Request, res: any): Promise<void> => {
       case 'OPTIONS':
         res.set('Access-Control-Allow-Methods', 'POST,PUT,DELETE');
         res.set('Access-Control-Allow-Origin', '*');
-        res.set('Access-Control-Allow-Headers', 'Content-Type');
+        res.set('Access-Control-Allow-Headers', 'Content-Type,Tenant');
         res.status(204).send('');
         return;
 

@@ -8,7 +8,11 @@ This document provides a quick reference for the Guardian CRUD API endpoints imp
 
 **Headers:**
 
-All requests should include the `Content-Type: application/json` header.
+All requests MUST include:
+- `Content-Type: application/json`
+- `Tenant: <tenant-name>` - Required for multi-tenancy support
+
+The `Tenant` header determines which Firebase database instance to use. The database URL format is `https://bus-app-2025-<tenant-name>.firebaseio.com`.
 
 ## Guardian Data Structure
 
@@ -69,6 +73,7 @@ Creates a new guardian record in the Firebase Realtime Database.
 ```bash
 curl -X POST \
   -H "Content-Type: application/json" \
+  -H "Tenant: demo" \
   -d '{
     "name": "John Smith",
     "govId": "123456789",
@@ -92,6 +97,7 @@ curl -X POST \
 ```bash
 curl -X POST \
   -H "Content-Type: application/json" \
+  -H "Tenant: demo" \
   -d '{
     "name": "Jane Doe",
     "govId": "987654321"
@@ -104,6 +110,7 @@ curl -X POST \
 ```bash
 curl -X POST \
   -H "Content-Type: application/json" \
+  -H "Tenant: demo" \
   -d '{
     "name": "Bob Johnson",
     "govId": "555666777",
@@ -149,6 +156,7 @@ Updates an existing guardian record based on the provided guardian ID.
 ```bash
 curl -X PUT \
   -H "Content-Type: application/json" \
+  -H "Tenant: demo" \
   -d '{
     "name": "John Smith Jr.",
     "students": [
@@ -166,6 +174,7 @@ curl -X PUT \
 ```bash
 curl -X PUT \
   -H "Content-Type: application/json" \
+  -H "Tenant: demo" \
   -d '{
     "students": []
   }' \
@@ -177,6 +186,7 @@ curl -X PUT \
 ```bash
 curl -X PUT \
   -H "Content-Type: application/json" \
+  -H "Tenant: demo" \
   -d '{
     "govId": "111222333"
   }' \
@@ -195,7 +205,9 @@ Deletes a guardian record based on the provided guardian ID.
 **Example using curl:**
 
 ```bash
-curl -X DELETE http://localhost:5001/bus-app-2025/us-central1/guardianCrud/GUAhk0hi1970c5f744a
+curl -X DELETE \
+  -H "Tenant: demo" \
+  http://localhost:5001/bus-app-2025/us-central1/guardianCrud/GUAhk0hi1970c5f744a
 ```
 
 ## Validation Rules
