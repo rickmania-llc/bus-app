@@ -1,16 +1,45 @@
-{
+DoOnce {
   "name": "bus-app",
   "version": "0.1.0",
   "private": true,
+  "main": "electron/main.js",
   "scripts": {
     "build": "yarn workspace functions run build",
     "emulators": "firebase emulators:start",
     "clean": "rm -rf functions/lib && rm -f common/types/*.js common/types/*.js.map",
     "clean:node": "find . -name \"node_modules\" -type d -exec rm -rf {} +",
     "clean:all": "yarn clean && yarn clean:node",
-    "build:all": "yarn install && yarn workspaces run build"
+    "build:all": "yarn install && yarn workspaces run build",
+    "electron:dev": "NODE_ENV=development electron . --no-sandbox",
+    "electron:build": "cd react-app && yarn build && cd .. && electron-builder",
+    "electron:start": "electron ."
   },
   "workspaces": [
     "functions"
-  ]
-} 
+  ],
+  "devDependencies": {
+    "electron": "^36.3.2",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.busapp.desktop",
+    "productName": "Bus Tracking App",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron/**/*",
+      "react-app/dist/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.productivity"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  }
+}
