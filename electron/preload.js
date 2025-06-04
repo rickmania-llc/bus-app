@@ -3,7 +3,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('electronAPI', {
   invoke: (channel, ...args) => {
     const validChannels = [
-      'get-students',
+      'setup-students-listener',
       'add-student',
       'update-student',
       'delete-student',

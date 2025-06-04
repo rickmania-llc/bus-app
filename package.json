@@ -1,4 +1,4 @@
-DoOnce {
+{
   "name": "bus-app",
   "version": "0.1.0",
   "private": true,
@@ -12,14 +12,19 @@ DoOnce {
     "build:all": "yarn install && yarn workspaces run build",
     "electron:dev": "NODE_ENV=development electron . --no-sandbox",
     "electron:build": "cd react-app && yarn build && cd .. && electron-builder",
-    "electron:start": "electron ."
+    "electron:start": "electron .",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug"
   },
   "workspaces": [
     "functions"
   ],
   "devDependencies": {
+    "@playwright/test": "^1.52.0",
     "electron": "^36.3.2",
-    "electron-builder": "^26.0.12"
+    "electron-builder": "^26.0.12",
+    "playwright": "^1.52.0"
   },
   "build": {
     "appId": "com.busapp.desktop",
@@ -41,5 +46,9 @@ DoOnce {
     "linux": {
       "target": "AppImage"
     }
+  },
+  "dependencies": {
+    "axios": "^1.9.0",
+    "firebase-admin": "^13.4.0"
   }
 }
