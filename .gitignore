@@ -83,5 +83,3 @@ common/types/*.js.map
 ref
 .claude
 
-# Claude AI memory file
-CLAUDE.md
