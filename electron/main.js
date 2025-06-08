@@ -1,6 +1,10 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const { fileURLToPath } = require('url');
+
+// Load environment variables from .env file
+require('dotenv').config({ path: path.join(__dirname, '.env') });
+
 const { initializeFirebase, callCloudFunction, getDb } = require('./firebase-config');
 
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
@@ -34,9 +38,7 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
-  // Initialize Firebase
-  initializeFirebase();
-  
+  // Don't initialize Firebase yet - wait for tenant from React app
   mainWindow = createWindow();
 
   app.on('activate', () => {
@@ -55,9 +57,10 @@ app.on('window-all-closed', () => {
 // ===== IPC Handlers for Students =====
 
 // Setup student listeners (called when React app is ready)
-ipcMain.handle('setup-students-listener', async (event) => {
+ipcMain.handle('setup-students-listener', async (event, { tenant }) => {
   try {
-    setupStudentsListeners();
+    console.log(`Setting up student listeners for tenant: ${tenant}`);
+    setupStudentsListeners(tenant);
     return { success: true };
   } catch (error) {
     console.error('Error setting up students listener:', error);
@@ -66,9 +69,9 @@ ipcMain.handle('setup-students-listener', async (event) => {
 });
 
 // Add a new student (via Cloud Function)
-ipcMain.handle('add-student', async (event, { studentData, idToken }) => {
+ipcMain.handle('add-student', async (event, { studentData, tenant = 'dev', idToken }) => {
   try {
-    const newStudent = await callCloudFunction('/students', 'POST', studentData, idToken);
+    const newStudent = await callCloudFunction('/studentCrud', 'POST', studentData, tenant, idToken);
     // The real-time listener will automatically pick up the change
     return newStudent;
   } catch (error) {
@@ -78,12 +81,13 @@ ipcMain.handle('add-student', async (event, { studentData, idToken }) => {
 });
 
 // Update a student (via Cloud Function)
-ipcMain.handle('update-student', async (event, { studentId, studentData, idToken }) => {
+ipcMain.handle('update-student', async (event, { studentId, studentData, tenant = 'dev', idToken }) => {
   try {
     const updatedStudent = await callCloudFunction(
-      `/students/${studentId}`, 
+      `/studentCrud/${studentId}`, 
       'PUT', 
       studentData, 
+      tenant,
       idToken
     );
     // The real-time listener will automatically pick up the change
@@ -95,9 +99,9 @@ ipcMain.handle('update-student', async (event, { studentId, studentData, idToken
 });
 
 // Delete a student (via Cloud Function)
-ipcMain.handle('delete-student', async (event, { studentId, idToken }) => {
+ipcMain.handle('delete-student', async (event, { studentId, tenant = 'dev', idToken }) => {
   try {
-    await callCloudFunction(`/students/${studentId}`, 'DELETE', null, idToken);
+    await callCloudFunction(`/studentCrud/${studentId}`, 'DELETE', null, tenant, idToken);
     // The real-time listener will automatically pick up the change
     return { success: true };
   } catch (error) {
@@ -110,8 +114,14 @@ ipcMain.handle('delete-student', async (event, { studentId, idToken }) => {
 let studentsValueListener = null;
 let studentsChildListeners = {};
 
-function setupStudentsListeners() {
-  const db = getDb();
+function setupStudentsListeners(tenant = 'dev') {
+  // Store current tenant for cleanup
+  currentTenant = tenant;
+  
+  // Initialize Firebase for this tenant if not already done
+  initializeFirebase(tenant);
+  
+  const db = getDb(tenant);
   if (!db) {
     console.warn('Firebase DB not initialized, skipping real-time listeners');
     return;
@@ -182,18 +192,16 @@ function sendToAllWindows(channel, data) {
   });
 }
 
-// Initialize listeners when app is ready
-app.on('ready', () => {
-  setTimeout(() => {
-    setupStudentsListeners();
-  }, 1000); // Give Firebase time to initialize
-});
+// Store current tenant for cleanup
+let currentTenant = null;
 
 // Cleanup listeners on quit
 app.on('before-quit', () => {
-  const db = getDb();
-  if (db) {
-    db.ref('students').off();
+  if (currentTenant) {
+    const db = getDb(currentTenant);
+    if (db) {
+      db.ref('students').off();
+    }
   }
 });
 

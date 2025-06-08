@@ -48,7 +48,7 @@ function transformFirebaseToRedux(firebaseData: Record<string, Student>): Studen
 // Async thunk to setup student listeners
 export const setupStudentListeners = createAsyncThunk(
   'students/setupListeners',
-  async (_, { dispatch }) => {
+  async (tenant: string = 'dev', { dispatch }) => {
     if (!isElectron()) {
       console.warn('Not in Electron environment, skipping IPC listeners')
       return { success: false, reason: 'Not in Electron' }
@@ -57,8 +57,9 @@ export const setupStudentListeners = createAsyncThunk(
     const electronWindow = window as WindowWithElectronAPI
 
     try {
-      // Setup the listener on the main process
-      await electronWindow.electronAPI.invoke('setup-students-listener')
+      // Setup the listener on the main process with tenant
+      console.log(`Setting up student listeners for tenant: ${tenant}`)
+      await electronWindow.electronAPI.invoke('setup-students-listener', { tenant })
       
       // Setup event handler for real-time updates
       const removeListener = electronWindow.electronAPI.on('students-updated', 

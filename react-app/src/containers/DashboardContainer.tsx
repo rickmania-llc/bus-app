@@ -22,7 +22,8 @@ export default function DashboardContainer() {
     // Setup Firebase listeners when component mounts and in Electron
     if (isElectron()) {
       console.log("DashboardContainer mounted - Setting up student listeners")
-      const setupPromise = dispatch(setupStudentListeners())
+      // Pass 'dev' tenant for now - in future this will come from user login
+      const setupPromise = dispatch(setupStudentListeners('dev'))
 
       // Cleanup function
       return () => {

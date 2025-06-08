@@ -92,11 +92,24 @@ Desktop application wrapper for the React admin dashboard using Electron. Provid
 - Service account credentials required for production
 - ID tokens validated for authenticated operations
 
-## Environment Variables
+## Environment Configuration
+
+### Setup
+1. Copy environment template to `.env`:
+   - Development: `cp .env.development .env`
+   - Production: `cp .env.production .env`
+2. Update `.env` with your configuration values
+3. Never commit `.env` file (it's gitignored)
+
+### Variables
 - `NODE_ENV` - Development/production mode detection
-- `FIREBASE_SERVICE_ACCOUNT_PATH` - Path to service account JSON
+- `FIREBASE_SERVICE_ACCOUNT_PATH` - Path to service account JSON (production only)
 - `FIREBASE_DATABASE_URL` - Firebase Realtime Database URL
 - `FIREBASE_FUNCTIONS_URL` - Cloud Functions base URL
+- `USE_FIREBASE_EMULATORS` - Enable emulators (development)
+- `FIREBASE_AUTH_EMULATOR_HOST` - Auth emulator host:port
+- `FIREBASE_DATABASE_EMULATOR_HOST` - Database emulator host:port
+- `DEFAULT_TENANT` - Default tenant identifier
 
 ## Error Handling
 - Uncaught exception handlers for crash prevention
