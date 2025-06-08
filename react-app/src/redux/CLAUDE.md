@@ -10,6 +10,8 @@ Centralized state management using Redux Toolkit for the bus tracking admin dash
 - Separate slices for each entity type and app-level concerns
 - Consistent patterns for CRUD operations across entity slices
 - Loading and error states managed per entity
+- IPC integration pattern for real-time Firebase synchronization in Electron
+- Environment-aware functionality (Electron vs Web)
 
 ## Files Overview
 
@@ -42,19 +44,37 @@ Centralized state management using Redux Toolkit for the bus tracking admin dash
 - `toggleInfoPanel(boolean | undefined)` - Controls info panel
 
 ### `slices/studentSlice.ts`
-**Purpose:** Student entity state management
+**Purpose:** Student entity state management with IPC integration for real-time Firebase synchronization
 **State Shape:**
-- `students: Student[]` - Array of student entities
+- `students: StudentWithId[]` - Array of student entities with ID field
 - `loading: boolean` - Loading state for async operations
 - `error: string | null` - Error message if operation failed
+- `listenersActive: boolean` - Whether Firebase listeners are active
 
 **Actions:**
-- `setStudents(Student[])` - Replace entire students array
-- `addStudent(Student)` - Add single student
-- `updateStudent(Student)` - Update existing student by ID
+- `setStudents(StudentWithId[])` - Replace entire students array
+- `addStudent(StudentWithId)` - Add single student
+- `updateStudent(StudentWithId)` - Update existing student by ID
 - `deleteStudent(string)` - Remove student by ID
 - `setLoading(boolean)` - Set loading state
 - `setError(string | null)` - Set error message
+- `setStudentsFromFirebase(StudentWithId[])` - Set students from Firebase with logging
+- `addStudentFromFirebase(StudentWithId)` - Add student from Firebase with duplicate check
+- `updateStudentFromFirebase(StudentWithId)` - Update student from Firebase
+- `removeStudentFromFirebase(string)` - Remove student from Firebase
+- `setListenersActive(boolean)` - Set listener state
+
+**Async Thunks:**
+- `setupStudentListeners()` - Initializes IPC listeners for real-time Firebase updates
+
+**Key Functions:**
+- `transformFirebaseToRedux(firebaseData)` - Converts Firebase object format to Redux array format
+
+**IPC Integration:**
+- Uses `electronAPI` to communicate with Electron main process
+- Listens on 'students-updated' channel for real-time updates
+- Handles update types: value, child_added, child_changed, child_removed
+- Stores cleanup function in window.__studentListenerCleanup
 
 ### `slices/driverSlice.ts`
 **Purpose:** Driver entity state management with common types
@@ -92,6 +112,12 @@ Centralized state management using Redux Toolkit for the bus tracking admin dash
 2. **Entity Creation:** Dispatch addStudent/addDriver → Update UI → Sync with backend
 3. **Error Handling:** Catch error → Dispatch setError(message) → Display in UI → Clear with setError(null)
 4. **View Navigation:** Dispatch setView → Reset selections → Update main panel
+5. **IPC Real-time Sync (Electron):** 
+   - DashboardContainer mounts → Dispatch setupStudentListeners → 
+   - Electron main process sets up Firebase listeners → 
+   - Firebase events trigger IPC messages → 
+   - Redux receives updates via electronAPI.on() → 
+   - Appropriate Firebase reducer updates state with logging
 
 ## Performance Considerations
 - Redux Toolkit uses Immer for immutable updates (performance optimized)

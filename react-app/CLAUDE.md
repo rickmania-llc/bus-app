@@ -101,7 +101,10 @@ Presentational components for UI elements
 
 ### `src/containers/`
 Smart components that connect to Redux
-- `DashboardContainer.tsx` - Main application shell
+- `DashboardContainer.tsx` - Main application shell with IPC listener setup
+  - Sets up Firebase real-time listeners on mount (Electron only)
+  - Manages navigation state and panel selection
+  - Handles cleanup of IPC listeners on unmount
 
 ### `src/redux/`
 State management with Redux Toolkit
