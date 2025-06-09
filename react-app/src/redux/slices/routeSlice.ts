@@ -1,12 +1,8 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
-import type { Route } from '../../../../common/types/Route'
-
-interface RouteWithId extends Route {
-  id: string
-}
+import { Route, Location, EmbeddedStop, StudentStatus } from '../../types/models/Route'
 
 interface RouteState {
-  routes: RouteWithId[]
+  routes: Route[]
   loading: boolean
   error: string | null
 }
@@ -21,13 +17,13 @@ const routeSlice = createSlice({
   name: 'routes',
   initialState,
   reducers: {
-    setRoutes: (state, action: PayloadAction<RouteWithId[]>) => {
+    setRoutes: (state, action: PayloadAction<Route[]>) => {
       state.routes = action.payload
     },
-    addRoute: (state, action: PayloadAction<RouteWithId>) => {
+    addRoute: (state, action: PayloadAction<Route>) => {
       state.routes.push(action.payload)
     },
-    updateRoute: (state, action: PayloadAction<RouteWithId>) => {
+    updateRoute: (state, action: PayloadAction<Route>) => {
       const index = state.routes.findIndex(r => r.id === action.payload.id)
       if (index !== -1) {
         state.routes[index] = action.payload

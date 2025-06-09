@@ -1,12 +1,5 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
-
-interface Guardian {
-  id: string
-  name: string
-  email: string
-  phone: string
-  studentIds: string[]
-}
+import { Guardian } from '../../types/models/Guardian'
 
 interface GuardianState {
   guardians: Guardian[]

@@ -1,12 +1,8 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
-import type { Driver } from '../../../../common/types/Driver'
-
-interface DriverWithId extends Driver {
-  id: string
-}
+import { Driver } from '../../types/models/Driver'
 
 interface DriverState {
-  drivers: DriverWithId[]
+  drivers: Driver[]
   loading: boolean
   error: string | null
 }
@@ -21,13 +17,13 @@ const driverSlice = createSlice({
   name: 'drivers',
   initialState,
   reducers: {
-    setDrivers: (state, action: PayloadAction<DriverWithId[]>) => {
+    setDrivers: (state, action: PayloadAction<Driver[]>) => {
       state.drivers = action.payload
     },
-    addDriver: (state, action: PayloadAction<DriverWithId>) => {
+    addDriver: (state, action: PayloadAction<Driver>) => {
       state.drivers.push(action.payload)
     },
-    updateDriver: (state, action: PayloadAction<DriverWithId>) => {
+    updateDriver: (state, action: PayloadAction<Driver>) => {
       const index = state.drivers.findIndex(d => d.id === action.payload.id)
       if (index !== -1) {
         state.drivers[index] = action.payload

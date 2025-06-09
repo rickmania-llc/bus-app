@@ -1,11 +1,6 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit'
-import { Student } from '../../../../common/types'
+import { Student } from '../../types/models/Student'
 import { isElectron } from '../../utils/environment'
-
-// Extend the common Student type with an id field for Redux state
-interface StudentWithId extends Student {
-  id: string
-}
 
 // Type for Firebase update events
 interface FirebaseUpdate {
@@ -14,17 +9,15 @@ interface FirebaseUpdate {
   key?: string
 }
 
-// Type for the window with electronAPI
-interface WindowWithElectronAPI extends Window {
-  electronAPI: {
-    invoke: (channel: string, ...args: unknown[]) => Promise<unknown>
-    on: (channel: string, callback: (update: FirebaseUpdate) => void) => () => void
+// Extend the global Window interface for student-specific cleanup
+declare global {
+  interface Window {
+    __studentListenerCleanup?: () => void
   }
-  __studentListenerCleanup?: () => void
 }
 
 interface StudentState {
-  students: StudentWithId[]
+  students: Student[]
   loading: boolean
   error: string | null
   listenersActive: boolean
@@ -38,38 +31,56 @@ const initialState: StudentState = {
 }
 
 // Helper function to transform Firebase data to Redux format
-function transformFirebaseToRedux(firebaseData: Record<string, Student>): StudentWithId[] {
+function transformFirebaseToRedux(firebaseData: Record<string, Omit<Student, 'id'>>): Student[] {
   return Object.entries(firebaseData || {}).map(([id, data]) => ({
     id,
     ...data
-  } as StudentWithId))
+  } as Student))
 }
 
 // Async thunk to setup student listeners
 export const setupStudentListeners = createAsyncThunk(
   'students/setupListeners',
-  async (tenant: string = 'dev', { dispatch }) => {
+  async (tenant: string = 'dev', { dispatch, getState }) => {
     if (!isElectron()) {
       console.warn('Not in Electron environment, skipping IPC listeners')
       return { success: false, reason: 'Not in Electron' }
     }
+    
+    // Check if listeners are already active
+    const state = getState() as { students: StudentState }
+    if (state.students.listenersActive) {
+      console.log('Student listeners already active, skipping setup')
+      return { success: false, reason: 'Listeners already active' }
+    }
+    
+    // Clean up any existing listener
+    if (window.__studentListenerCleanup) {
+      console.log('Cleaning up existing student listener')
+      window.__studentListenerCleanup()
+      window.__studentListenerCleanup = undefined
+    }
 
-    const electronWindow = window as WindowWithElectronAPI
+    if (!window.electronAPI) {
+      return { success: false, reason: 'electronAPI not available' }
+    }
+    
+    const { electronAPI } = window
 
     try {
       // Setup the listener on the main process with tenant
       console.log(`Setting up student listeners for tenant: ${tenant}`)
-      await electronWindow.electronAPI.invoke('setup-students-listener', { tenant })
+      await electronAPI.invoke('setup-students-listener', { tenant })
       
       // Setup event handler for real-time updates
-      const removeListener = electronWindow.electronAPI.on('students-updated', 
+      const removeListener = electronAPI.on('students-updated', 
         (update: FirebaseUpdate) => {
           console.log('Received student update:', update.type, update.key || 'bulk')
           
           switch (update.type) {
             case 'value': {
               // Full data replacement
-              const students = transformFirebaseToRedux(update.data as Record<string, Student> || {})
+              const students = transformFirebaseToRedux(update.data as Record<string, Omit<Student, 'id'>> || {})
               dispatch(setStudentsFromFirebase(students))
               break
             }
@@ -77,7 +88,7 @@ export const setupStudentListeners = createAsyncThunk(
             case 'child_added':
               // Single student added
               if (update.key && update.data) {
-                const newStudent: StudentWithId = { id: update.key, ...(update.data as Student) }
+                const newStudent: Student = { id: update.key, ...(update.data as Omit<Student, 'id'>) }
                 dispatch(addStudentFromFirebase(newStudent))
               }
               break
@@ -85,7 +96,7 @@ export const setupStudentListeners = createAsyncThunk(
             case 'child_changed':
               // Single student updated
               if (update.key && update.data) {
-                const updatedStudent: StudentWithId = { id: update.key, ...(update.data as Student) }
+                const updatedStudent: Student = { id: update.key, ...(update.data as Omit<Student, 'id'>) }
                 dispatch(updateStudentFromFirebase(updatedStudent))
               }
               break
@@ -101,7 +112,7 @@ export const setupStudentListeners = createAsyncThunk(
       )
       
       // Store the cleanup function
-      electronWindow.__studentListenerCleanup = removeListener
+      window.__studentListenerCleanup = removeListener
       
       return { success: true, removeListener }
     } catch (error) {
@@ -115,13 +126,13 @@ const studentSlice = createSlice({
   name: 'students',
   initialState,
   reducers: {
-    setStudents: (state, action: PayloadAction<StudentWithId[]>) => {
+    setStudents: (state, action: PayloadAction<Student[]>) => {
       state.students = action.payload
     },
-    addStudent: (state, action: PayloadAction<StudentWithId>) => {
+    addStudent: (state, action: PayloadAction<Student>) => {
       state.students.push(action.payload)
     },
-    updateStudent: (state, action: PayloadAction<StudentWithId>) => {
+    updateStudent: (state, action: PayloadAction<Student>) => {
       const index = state.students.findIndex(s => s.id === action.payload.id)
       if (index !== -1) {
         state.students[index] = action.payload
@@ -137,21 +148,28 @@ const studentSlice = createSlice({
       state.error = action.payload
     },
     // Firebase-specific reducers with console logging
-    setStudentsFromFirebase: (state, action: PayloadAction<StudentWithId[]>) => {
+    setStudentsFromFirebase: (state, action: PayloadAction<Student[]>) => {
       console.log(`[Redux] Setting ${action.payload.length} students from Firebase`)
       state.students = action.payload
       state.loading = false
       state.error = null
+      // Log the current state
+      console.log('[Redux] Current student state:', JSON.stringify(state.students.map(s => ({ id: s.id, name: s.name }))))
     },
-    addStudentFromFirebase: (state, action: PayloadAction<StudentWithId>) => {
+    addStudentFromFirebase: (state, action: PayloadAction<Student>) => {
       console.log(`[Redux] Adding student from Firebase:`, action.payload.id, action.payload.name)
       // Check if student already exists (in case of duplicate events)
       const exists = state.students.some(s => s.id === action.payload.id)
       if (!exists) {
         state.students.push(action.payload)
+        console.log('[Redux] Student added. Current count:', state.students.length)
+      } else {
+        console.log('[Redux] Student already exists, skipping add')
       }
+      // Log the current state
+      console.log('[Redux] Current student state:', JSON.stringify(state.students.map(s => ({ id: s.id, name: s.name }))))
     },
-    updateStudentFromFirebase: (state, action: PayloadAction<StudentWithId>) => {
+    updateStudentFromFirebase: (state, action: PayloadAction<Student>) => {
       console.log(`[Redux] Updating student from Firebase:`, action.payload.id, action.payload.name)
       const index = state.students.findIndex(s => s.id === action.payload.id)
       if (index !== -1) {
@@ -171,8 +189,11 @@ const studentSlice = createSlice({
       .addCase(setupStudentListeners.pending, (state) => {
         state.loading = true
       })
-      .addCase(setupStudentListeners.fulfilled, (state) => {
-        state.listenersActive = true
+      .addCase(setupStudentListeners.fulfilled, (state, action) => {
+        // Only mark as active if setup was successful
+        if (action.payload?.success) {
+          state.listenersActive = true
+        }
         state.loading = false
       })
       .addCase(setupStudentListeners.rejected, (state, action) => {
