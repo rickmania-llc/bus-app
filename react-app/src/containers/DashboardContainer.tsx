@@ -20,6 +20,7 @@ export default function DashboardContainer() {
 
   useEffect(() => {
     // Setup Firebase listeners when component mounts and in Electron
+    // TODO make sure this only loads once
     if (isElectron()) {
       console.log("DashboardContainer mounted - Setting up student listeners")
       // Pass 'dev' tenant for now - in future this will come from user login
