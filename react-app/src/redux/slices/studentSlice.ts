@@ -81,6 +81,7 @@ export const setupStudentListeners = createAsyncThunk(
             case 'value': {
               // Full data replacement
               const students = transformFirebaseToRedux(update.data as Record<string, Omit<Student, 'id'>> || {})
+              console.log('GOT STUDENTS', students);
               dispatch(setStudentsFromFirebase(students))
               break
             }
