@@ -194,4 +194,10 @@ List all new files that must be added to appropriate `CLAUDE.md` files:
 5. **Commit documentation updates**: Include `CLAUDE.md` updates in your commits alongside code changes
 6. **Verify completeness**: Ensure no new functionality is missing from documentation before final commit
 
-**Documentation updates are not optional - they are required for issue completion.**
+**Upon completion, you MUST:**
+
+7. **Create completion summary**: Use the criteria in the next 3 items in this list to create a completion document in the `ref/` folder named `[issue-name]-completion.md`
+8. **Document all changes**: List every file modified, function created, and documentation updated
+9.  **Prepare for handoff**: In completion document, include specific testing requirements and review focus areas for Phase 4
+
+**Documentation updates and completion summary are not optional - they are required for issue completion.**
