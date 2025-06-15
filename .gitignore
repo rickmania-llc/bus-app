@@ -13,6 +13,9 @@ firebase-debug.*.log*
 # Firebase cache
 .firebase/
 
+# Firebase emulator data
+emulator-data/
+
 # Firebase config
 
 # Uncomment this if you'd like others to create their own Firebase project.
@@ -80,6 +83,4 @@ common/types/*.js.map
 
 # IDE folders
 .idea/
-ref
 .claude
-.env
