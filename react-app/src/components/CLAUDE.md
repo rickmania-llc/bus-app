@@ -10,6 +10,9 @@ Presentational React components that make up the user interface of the bus track
 - Component composition pattern with props drilling
 - Stateless presentational components where possible
 - Panel-based architecture for main content areas
+- Card-based UI pattern for entity display
+- Local selection state management within main panels
+- Side panel pattern for editing selected entities
 
 ## Files Overview
 
@@ -62,11 +65,20 @@ Presentational React components that make up the user interface of the bus track
 - Route creation and editing
 
 ### `main-panel/StudentsMainPanel.tsx`
-**Purpose:** Students management panel (placeholder)
-**Expected Features:**
-- Student list with search/filter
-- Add/edit student forms
-- Student-guardian associations
+**Purpose:** Students management panel with card display and editing capabilities
+**Key Functions:**
+- `handleStudentSelect(studentId: string)` - Updates selectedStudentId state, toggles selection
+- `handleClearSelection()` - Clears selected student
+- `getPrimaryGuardian(studentId: string)` - Finds primary guardian for a student
+
+**Features:**
+- Card-based student display with grid layout
+- Local selection state management using useState
+- Side panel for editing selected students
+- Loading states with skeleton cards
+- Empty state messaging
+- Error state handling
+- Integration with Redux for student and guardian data
 
 ### `main-panel/DriversMainPanel.tsx`
 **Purpose:** Drivers management panel (placeholder)
@@ -74,6 +86,45 @@ Presentational React components that make up the user interface of the bus track
 - Driver list and profiles
 - Driver assignment to routes
 - Driver availability management
+
+### `cards/StudentCard.tsx`
+**Purpose:** Reusable card component for displaying individual student information
+**Key Functions:**
+- `calculateAge(dob: number)` - Calculates student age from date of birth timestamp
+- `formatAddress(address: string)` - Extracts first line of address for display
+
+**Props Interface:**
+- `student: Student` - Student data to display
+- `primaryGuardian?: Guardian` - Optional primary guardian information
+- `isSelected: boolean` - Selection state for visual highlighting
+- `onSelect: (studentId: string) => void` - Callback for selection handling
+
+**Features:**
+- Profile picture with fallback avatar
+- Displays name, age, address snippet
+- Shows primary guardian name if available
+- Visual selection state with border color
+- Click handling for selection
+- Responsive hover effects
+
+### `side-panels/StudentSidePanel.tsx`
+**Purpose:** Side panel component for editing selected student information
+**Key Functions:**
+- `handleInputChange` - Updates form state for controlled inputs
+- `handleSubmit` - Handles form submission (TODO: Redux integration)
+
+**Props Interface:**
+- `student: Student` - Selected student data
+- `guardians: Guardian[]` - List of guardians associated with student
+- `onClose: () => void` - Callback to close the panel
+
+**Features:**
+- Form for editing student details (name, DOB, address, picture URL)
+- Profile picture display with fallback
+- Guardian relationship display (primary and secondary)
+- Save and cancel actions
+- Responsive form layout
+- Smooth close animation
 
 ## Key Dependencies
 - `lucide-react` - Icon library for navigation and UI elements
@@ -84,6 +135,8 @@ Presentational React components that make up the user interface of the bus track
 1. **Navigation Flow:** User clicks nav item → NavigationPanel calls onItemClick → Container updates selectedItem → MainPanel renders new content
 2. **Panel Switching:** MainPanel receives selectedItem → renderContent() matches to panel → Returns appropriate component
 3. **State Management:** Local state in NavigationPanel for UI → Lifted state in container for app state
+4. **Student Selection Flow:** User clicks StudentCard → handleStudentSelect toggles selection → Side panel renders with student data
+5. **Entity Editing Flow:** Side panel displays form → User edits fields → Save triggers Redux update → Panel closes on success
 
 ## Performance Considerations
 - Panels are not lazy loaded (could be optimized for larger app)
