@@ -14,4 +14,7 @@ export interface Student {
   
   /** URL to student's profile picture */
   pictureUrl: string;
+  
+  /** When the student record was created (Unix timestamp in milliseconds) */
+  createdAt: number;
 } 

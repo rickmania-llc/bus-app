@@ -54,8 +54,8 @@ Backend API services implemented as Firebase Cloud Functions. Provides RESTful e
 - `README.md` - API documentation
 
 **Key Functions in crudLogic.ts:**
-- `createStudent` - Creates new student with validation and unique ID generation
-- `updateStudent` - Updates existing student with partial data
+- `createStudent` - Creates new student with validation, unique ID generation, and sets createdAt timestamp
+- `updateStudent` - Updates existing student with partial data, prevents createdAt modification
 - `deleteStudent` - Removes student and cleans up guardian references
 - `parseDateOfBirth` - Utility for flexible date input handling
 - `removeStudentFromGuardians` - Cleanup utility for maintaining referential integrity
@@ -63,14 +63,17 @@ Backend API services implemented as Firebase Cloud Functions. Provides RESTful e
 ### `api/guardians/`
 **Purpose:** Guardian entity CRUD operations
 **Structure:** Similar to students module with index.ts, crudLogic.ts, and README.md
+**Key Features:** Creates guardians with createdAt timestamp, prevents createdAt updates
 
 ### `api/drivers/`
 **Purpose:** Driver entity CRUD operations
 **Structure:** Similar to students module with index.ts, crudLogic.ts, and README.md
+**Key Features:** Creates drivers with createdAt timestamp, prevents createdAt updates
 
 ### `api/routes/`
 **Purpose:** Route entity CRUD operations with embedded stops
 **Structure:** Similar to students module with index.ts, crudLogic.ts, and README.md
+**Key Features:** Creates routes with createdAt timestamp, prevents createdAt updates
 
 ## Key Dependencies
 - `firebase-admin` - Admin SDK for database operations

@@ -102,7 +102,8 @@ export const createGuardian = async (
     govId: body.govId,
     // Set pictureUrl to null if not provided, otherwise use the provided value
     pictureUrl: (body.pictureUrl !== undefined && body.pictureUrl !== '') ? body.pictureUrl : null,
-    students: studentsValidation.studentsObject || {}
+    students: studentsValidation.studentsObject || {},
+    createdAt: Date.now()
   };
 
   // Adding guardian to database
@@ -140,6 +141,11 @@ export const updateGuardian = async (
   }
 
   console.log('GUARDIAN TO UPDATE', req.body);
+  
+  // Prevent updating createdAt
+  if (req.body.createdAt !== undefined) {
+    return {success: false, message: 'Cannot update createdAt field'};
+  }
   const updateObj: Partial<Guardian> = {};
 
   if (req.body.name !== undefined) {

@@ -29,6 +29,7 @@ Shared type definitions and utilities used across both frontend (React) and back
 - `govId: string` - Guardian's government ID number
 - `pictureUrl: string | null` - URL to guardian's profile picture
 - `students: object` - Map of student IDs with reference relationships and primary guardian flags
+- `createdAt: number` - When the guardian record was created (Unix timestamp in milliseconds)
 
 ### `types/Student.ts`
 **Purpose:** Type definition for student entities
@@ -37,6 +38,7 @@ Shared type definitions and utilities used across both frontend (React) and back
 - `dob: number` - Date of birth (Unix timestamp in milliseconds)
 - `address: string` - Student's home address
 - `pictureUrl: string` - URL to student's profile picture
+- `createdAt: number` - When the student record was created (Unix timestamp in milliseconds)
 
 ### `types/Driver.ts`
 **Purpose:** Type definition for bus driver entities
@@ -46,11 +48,12 @@ Shared type definitions and utilities used across both frontend (React) and back
 - `dob: number` - Date of birth (Unix timestamp in milliseconds)
 - `hireDate: number` - When the driver was hired (Unix timestamp in milliseconds)
 - `pictureUrl: string | null` - URL to driver's profile picture
+- `createdAt: number` - When the driver record was created (Unix timestamp in milliseconds)
 
 ### `types/Route.ts`
 **Purpose:** Type definitions for bus routes and related entities
 **Key Types:**
-- `Route` - Main route interface with start/end times, locations, stops, and driver assignment
+- `Route` - Main route interface with start/end times, locations, stops, driver assignment, and createdAt timestamp
 - `EmbeddedStop` - Stop details including expected/actual times, location, and student statuses
 - `Location` - GPS coordinate pair (lat/lon)
 - `StudentStatus` - Student pickup/dropoff and guardian verification status

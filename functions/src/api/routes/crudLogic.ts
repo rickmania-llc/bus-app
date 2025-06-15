@@ -224,7 +224,8 @@ export const createRoute = async (
     endLocation: body.endLocation ?? {},
     stops: body.stops ?? [],
     driverId: body.driverId ?? null,
-    currentLocationId: body.currentLocationId ?? null
+    currentLocationId: body.currentLocationId ?? null,
+    createdAt: Date.now()
   };
 
   // Add route to database
@@ -258,6 +259,11 @@ export const updateRoute = async (
 
   const currentRoute = snapshot.val() as Route;
   const updateObj: Partial<Route> = {};
+  
+  // Prevent updating createdAt
+  if (req.body.createdAt !== undefined) {
+    return {success: false, message: 'Cannot update createdAt field'};
+  }
 
   // Validate and update fields if provided
   if (req.body.startTime !== undefined) {

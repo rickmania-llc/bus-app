@@ -19,4 +19,7 @@ export interface Driver {
   
   /** URL to driver's profile picture */
   pictureUrl: string | null;
+  
+  /** When the driver record was created (Unix timestamp in milliseconds) */
+  createdAt: number;
 } 

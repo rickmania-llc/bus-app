@@ -1,4 +1,4 @@
-import { ref, onValue, onChildAdded, onChildChanged, onChildRemoved, off, DataSnapshot, query, orderByKey, startAfter, limitToLast } from 'firebase/database';
+import { ref, onValue, onChildAdded, onChildChanged, onChildRemoved, off, DataSnapshot, query, orderByChild, startAfter } from 'firebase/database';
 import { initFirebase, database } from './authHandler';
 import type { AppDispatch } from '../../redux/store';
 import type { Student } from '../../types/models/Student';
@@ -66,14 +66,15 @@ class DatabaseHandler {
       // Turn off the value listener after initial load
       off(studentsRef, 'value');
 
-      // Get the last key to use as a starting point
-      const lastKey = Object.keys(initialData).sort().pop() || '';
-      console.log('[Students] Last key for future queries:', lastKey);
+      // Get the highest createdAt timestamp to use as a starting point
+      const timestamps = Object.values(initialData).map((student: any) => student.createdAt || 0);
+      const lastTimestamp = timestamps.length > 0 ? Math.max(...timestamps) : 0;
+      console.log('[Students] Last timestamp for future queries:', lastTimestamp);
 
-      // Set up child listeners for ongoing updates (only for new items after lastKey)
+      // Set up child listeners for ongoing updates (only for new items after lastTimestamp)
       const listeners = {
-        childAdded: lastKey ? 
-          onChildAdded(query(studentsRef, orderByKey(), startAfter(lastKey)), (snapshot) => {
+        childAdded: lastTimestamp > 0 ? 
+          onChildAdded(query(studentsRef, orderByChild('createdAt'), startAfter(lastTimestamp)), (snapshot) => {
             const id = snapshot.key;
             console.log('[Students] child_added event for NEW ID:', id);
             if (id) {
@@ -86,7 +87,7 @@ class DatabaseHandler {
               });
             }
           }) :
-          onChildAdded(studentsRef, (snapshot) => {
+          onChildAdded(query(studentsRef, orderByChild('createdAt')), (snapshot) => {
             const id = snapshot.key;
             console.log('[Students] child_added event for NEW ID:', id);
             if (id) {
@@ -163,13 +164,14 @@ class DatabaseHandler {
       this.dispatch({ type: 'guardians/setGuardians', payload: guardians });
       off(guardiansRef, 'value');
 
-      // Get the last key to use as a starting point
-      const lastKey = Object.keys(initialData).sort().pop() || '';
-      console.log('[Guardians] Last key for future queries:', lastKey);
+      // Get the highest createdAt timestamp to use as a starting point
+      const timestamps = Object.values(initialData).map((guardian: any) => guardian.createdAt || 0);
+      const lastTimestamp = timestamps.length > 0 ? Math.max(...timestamps) : 0;
+      console.log('[Guardians] Last timestamp for future queries:', lastTimestamp);
 
       const listeners = {
-        childAdded: lastKey ?
-          onChildAdded(query(guardiansRef, orderByKey(), startAfter(lastKey)), (snapshot) => {
+        childAdded: lastTimestamp > 0 ?
+          onChildAdded(query(guardiansRef, orderByChild('createdAt'), startAfter(lastTimestamp)), (snapshot) => {
             const id = snapshot.key;
             console.log('[Guardians] child_added event for NEW ID:', id);
             if (id) {
@@ -182,7 +184,7 @@ class DatabaseHandler {
               });
             }
           }) :
-          onChildAdded(guardiansRef, (snapshot) => {
+          onChildAdded(query(guardiansRef, orderByChild('createdAt')), (snapshot) => {
             const id = snapshot.key;
             console.log('[Guardians] child_added event for NEW ID:', id);
             if (id) {
@@ -258,13 +260,14 @@ class DatabaseHandler {
       this.dispatch({ type: 'drivers/setDrivers', payload: drivers });
       off(driversRef, 'value');
 
-      // Get the last key to use as a starting point
-      const lastKey = Object.keys(initialData).sort().pop() || '';
-      console.log('[Drivers] Last key for future queries:', lastKey);
+      // Get the highest createdAt timestamp to use as a starting point
+      const timestamps = Object.values(initialData).map((driver: any) => driver.createdAt || 0);
+      const lastTimestamp = timestamps.length > 0 ? Math.max(...timestamps) : 0;
+      console.log('[Drivers] Last timestamp for future queries:', lastTimestamp);
 
       const listeners = {
-        childAdded: lastKey ?
-          onChildAdded(query(driversRef, orderByKey(), startAfter(lastKey)), (snapshot) => {
+        childAdded: lastTimestamp > 0 ?
+          onChildAdded(query(driversRef, orderByChild('createdAt'), startAfter(lastTimestamp)), (snapshot) => {
             const id = snapshot.key;
             console.log('[Drivers] child_added event for NEW ID:', id);
             if (id) {
@@ -277,7 +280,7 @@ class DatabaseHandler {
               });
             }
           }) :
-          onChildAdded(driversRef, (snapshot) => {
+          onChildAdded(query(driversRef, orderByChild('createdAt')), (snapshot) => {
             const id = snapshot.key;
             console.log('[Drivers] child_added event for NEW ID:', id);
             if (id) {
@@ -353,13 +356,14 @@ class DatabaseHandler {
       this.dispatch({ type: 'routes/setRoutes', payload: routes });
       off(routesRef, 'value');
 
-      // Get the last key to use as a starting point
-      const lastKey = Object.keys(initialData).sort().pop() || '';
-      console.log('[Routes] Last key for future queries:', lastKey);
+      // Get the highest createdAt timestamp to use as a starting point
+      const timestamps = Object.values(initialData).map((route: any) => route.createdAt || 0);
+      const lastTimestamp = timestamps.length > 0 ? Math.max(...timestamps) : 0;
+      console.log('[Routes] Last timestamp for future queries:', lastTimestamp);
 
       const listeners = {
-        childAdded: lastKey ?
-          onChildAdded(query(routesRef, orderByKey(), startAfter(lastKey)), (snapshot) => {
+        childAdded: lastTimestamp > 0 ?
+          onChildAdded(query(routesRef, orderByChild('createdAt'), startAfter(lastTimestamp)), (snapshot) => {
             const id = snapshot.key;
             console.log('[Routes] child_added event for NEW ID:', id);
             if (id) {
@@ -372,7 +376,7 @@ class DatabaseHandler {
               });
             }
           }) :
-          onChildAdded(routesRef, (snapshot) => {
+          onChildAdded(query(routesRef, orderByChild('createdAt')), (snapshot) => {
             const id = snapshot.key;
             console.log('[Routes] child_added event for NEW ID:', id);
             if (id) {

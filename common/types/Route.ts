@@ -67,4 +67,7 @@ export interface Route {
   
   /** Reference to the current location data for active routes (null for templates and completed routes) */
   currentLocationId: string | null;
+  
+  /** When the route record was created (Unix timestamp in milliseconds) */
+  createdAt: number;
 } 

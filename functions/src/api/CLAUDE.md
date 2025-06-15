@@ -65,6 +65,8 @@ Each entity directory follows the same pattern:
 - Guardian reference cleanup on deletion
 - Picture URL validation
 - Custom ID generation: `STU{random}{timestamp}`
+- Automatic createdAt timestamp on creation
+- Protection against createdAt modification in updates
 
 ### Guardians API (`guardians/`)
 **Special Features:**
@@ -72,6 +74,8 @@ Each entity directory follows the same pattern:
 - Primary guardian designation
 - Bidirectional reference updates
 - Multiple students per guardian
+- Automatic createdAt timestamp on creation
+- Protection against createdAt modification in updates
 
 ### Drivers API (`drivers/`)
 **Special Features:**
@@ -79,6 +83,8 @@ Each entity directory follows the same pattern:
 - Hire date tracking
 - Route assignment checks on deletion
 - Driver availability management
+- Automatic createdAt timestamp on creation
+- Protection against createdAt modification in updates
 
 ### Routes API (`routes/`)
 **Special Features:**
@@ -87,6 +93,8 @@ Each entity directory follows the same pattern:
 - Student assignment to stops
 - Real-time location tracking references
 - Complex nested data structures
+- Automatic createdAt timestamp on creation
+- Protection against createdAt modification in updates
 
 ## Key Dependencies
 - `firebase-functions/v2/https` - HTTP trigger functions

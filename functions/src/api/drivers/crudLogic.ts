@@ -113,7 +113,8 @@ export const createDriver = async (
     dob: dobValidation.timestamp!,
     hireDate: hireDateValidation.timestamp!,
     // Set pictureUrl to null if not provided, otherwise use the provided value
-    pictureUrl: (body.pictureUrl !== undefined && body.pictureUrl !== '') ? body.pictureUrl : null
+    pictureUrl: (body.pictureUrl !== undefined && body.pictureUrl !== '') ? body.pictureUrl : null,
+    createdAt: Date.now()
   };
 
   // Adding driver to database
@@ -150,6 +151,11 @@ export const updateDriver = async (
   }
 
   console.log('DRIVER TO UPDATE', req.body);
+  
+  // Prevent updating createdAt
+  if (req.body.createdAt !== undefined) {
+    return {success: false, message: 'Cannot update createdAt field'};
+  }
   const updateObj: Partial<Driver> = {};
 
   if (req.body.name !== undefined) {

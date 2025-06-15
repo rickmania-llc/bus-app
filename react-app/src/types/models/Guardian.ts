@@ -23,4 +23,7 @@ export interface Guardian {
       isPrimaryGuardian: boolean;
     };
   };
+  
+  /** When the guardian record was created (Unix timestamp in milliseconds) */
+  createdAt: number;
 } 

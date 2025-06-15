@@ -64,4 +64,7 @@ export interface Route {
   templateId: string | null;
   /** For instances: the date this route is for (YYYY-MM-DD format) */
   date: string | null;
+  
+  /** When the route record was created (Unix timestamp in milliseconds) */
+  createdAt: number;
 }

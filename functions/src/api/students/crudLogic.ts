@@ -103,7 +103,8 @@ export const createStudent = async (req: Request, studentRef: database.Reference
     dob: dobValidation.timestamp!,
     address: body.address,
     // Set pictureUrl to null if not provided, otherwise use the provided value
-    pictureUrl: (body.pictureUrl !== undefined && body.pictureUrl !== '') ? body.pictureUrl : null
+    pictureUrl: (body.pictureUrl !== undefined && body.pictureUrl !== '') ? body.pictureUrl : null,
+    createdAt: Date.now()
   };
 
   // Adding student to database
@@ -138,6 +139,11 @@ export const updateStudent = async (req: Request, studentRef: database.Reference
 
   console.log('STUDENT TO UPDATE', req.body);
   const updateObj: Partial<Student> = {};
+
+  // Prevent updating createdAt
+  if (req.body.createdAt !== undefined) {
+    return {success: false, message: 'Cannot update createdAt field'};
+  }
 
   if (req.body.name !== undefined) {
     if (req.body.name === null || req.body.name === '') {

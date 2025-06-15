@@ -38,8 +38,8 @@ Direct Firebase integration for the React admin dashboard, providing real-time d
   - Stores dispatch function for Redux updates
 - `initStudentListeners()` - Sets up student entity listeners
   - Uses once() for initial data load
-  - Switches to child listeners for updates
-  - Prevents duplicate events with sentIds tracking
+  - Queries by createdAt timestamp for chronological ordering
+  - Prevents duplicate events with timestamp-based filtering
 - `initGuardianListeners()` - Sets up guardian entity listeners
 - `initDriverListeners()` - Sets up driver entity listeners
 - `initRouteListeners()` - Sets up route entity listeners
@@ -49,9 +49,10 @@ Direct Firebase integration for the React admin dashboard, providing real-time d
 1. Check if listeners already exist for tenant
 2. Get initial data with onValue (once)
 3. Dispatch setEntity action with full data
-4. Set up child listeners (added, changed, removed)
-5. Track sent IDs to prevent duplicates
-6. Store listener info in activeListeners Map
+4. Extract highest createdAt timestamp from initial data
+5. Set up child listeners with orderByChild('createdAt')
+6. Use startAfter(lastTimestamp) to get only new items
+7. Store listener info in activeListeners Map
 
 ### `types.ts`
 **Purpose:** TypeScript type definitions for Firebase integration
@@ -79,8 +80,9 @@ Direct Firebase integration for the React admin dashboard, providing real-time d
 ## Performance Considerations
 - Uses Map to track active listeners and prevent duplicates
 - Initial data loaded once, then only incremental updates
-- Duplicate prevention through sentIds tracking
+- Timestamp-based ordering ensures chronological data flow
 - Efficient listener cleanup on unmount
+- OrderByChild('createdAt') query optimization
 
 ## Security Notes
 - API key authentication required
