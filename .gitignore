@@ -82,4 +82,4 @@ common/types/*.js.map
 .idea/
 ref
 .claude
-
+.env

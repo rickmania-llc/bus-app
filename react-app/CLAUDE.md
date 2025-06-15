@@ -1,7 +1,7 @@
 # React App Module
 
 ## Directory Purpose
-Administrator dashboard application built with React, Redux Toolkit, and Tailwind CSS v4. Provides the user interface for bus route management, student tracking, and system administration. Can run both as a web application and within an Electron desktop wrapper.
+Administrator dashboard application built with React, Redux Toolkit, and Tailwind CSS v4. Provides the user interface for bus route management, student tracking, and system administration. Runs as a standalone web application with direct Firebase integration.
 
 ## Architecture Notes
 - React 19 with TypeScript for type safety
@@ -9,7 +9,8 @@ Administrator dashboard application built with React, Redux Toolkit, and Tailwin
 - Tailwind CSS v4 for styling with PostCSS
 - Vite as build tool for fast development and optimized production builds
 - Component-based architecture with containers and presentational components
-- Support for both web and Electron environments
+- Direct Firebase integration for real-time data synchronization
+- Multi-tenant support through Firebase configuration
 
 ## Files Overview
 
@@ -72,12 +73,13 @@ Administrator dashboard application built with React, Redux Toolkit, and Tailwin
 - `tailwindcss` v4 - Utility-first CSS framework
 - `vite` - Build tool and dev server
 - `typescript` - Type safety
+- `firebase` - Firebase Web SDK for database and auth
 
 ## Common Workflows
 1. **Component Development:** Create component → Add to container → Connect to Redux if needed
 2. **State Management:** Define slice → Add to store → Use hooks in components
 3. **Styling:** Use Tailwind utilities → Create custom components → Maintain consistency
-4. **Environment Detection:** Check isElectron() → Conditionally use electronAPI → Fallback to web APIs
+4. **Firebase Integration:** Initialize DatabaseHandler → Set up listeners → Dispatch Redux actions → Update UI
 
 ## Performance Considerations
 - Vite provides fast HMR (Hot Module Replacement) in development
@@ -86,10 +88,11 @@ Administrator dashboard application built with React, Redux Toolkit, and Tailwin
 - Lazy loading for route-based code splitting when needed
 
 ## Security Notes
-- Environment detection prevents web APIs in Electron context
+- Firebase API key required for authentication
 - All API calls should go through proper authentication
 - Sensitive data should not be stored in Redux state
 - XSS prevention through React's built-in protections
+- Multi-tenant data isolation through Firebase database URLs
 
 ## Directory Structure
 
@@ -101,10 +104,10 @@ Presentational components for UI elements
 
 ### `src/containers/`
 Smart components that connect to Redux
-- `DashboardContainer.tsx` - Main application shell with IPC listener setup
-  - Sets up Firebase real-time listeners on mount (Electron only)
+- `DashboardContainer.tsx` - Main application shell with Firebase initialization
+  - Initializes DatabaseHandler on mount with tenant configuration
   - Manages navigation state and panel selection
-  - Handles cleanup of IPC listeners on unmount
+  - Handles cleanup of Firebase listeners on unmount
 
 ### `src/redux/`
 State management with Redux Toolkit
@@ -113,11 +116,14 @@ State management with Redux Toolkit
 
 ### `src/types/`
 TypeScript type definitions
-- `electron.d.ts` - Electron API types
+- `models/` - Entity type definitions (Student, Guardian, Driver, Route)
 
 ### `src/utils/`
 Utility functions and helpers
-- `environment.ts` - Environment detection utilities
+- `firebase/` - Firebase integration module
+  - `authHandler.ts` - Firebase initialization and configuration
+  - `databaseHandler.ts` - Real-time database listener management
+  - `types.ts` - Firebase-specific type definitions
 
 ### `public/`
 Static assets served directly

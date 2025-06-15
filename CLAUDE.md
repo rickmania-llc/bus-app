@@ -170,7 +170,7 @@ Every issue must include:
 ### Internal APIs
 - REST API endpoints in `/functions/src/api/`
 - Redux store for state management in React app
-- IPC communication between Electron and React
+- Direct Firebase integration in React app
 
 ### Database Patterns
 - Firebase Realtime Database structure documented in `/docs/project/data/`

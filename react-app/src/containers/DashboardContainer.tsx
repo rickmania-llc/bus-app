@@ -4,8 +4,7 @@ import { useDispatch } from "react-redux"
 import type { AppDispatch } from "../redux/store"
 import NavigationPanel from "../components/NavigationPanel"
 import MainPanel from "../components/MainPanel"
-import { isElectron } from "../utils/environment"
-import { setupStudentListeners } from "../redux/slices/studentSlice"
+import DatabaseHandler from "../utils/firebase/databaseHandler"
 
 interface NavigationItem {
   id: string
@@ -19,31 +18,10 @@ export default function DashboardContainer() {
   const dispatch = useDispatch<AppDispatch>()
 
   useEffect(() => {
-    // Setup Firebase listeners when component mounts and in Electron
-    // TODO make sure this only loads once
-    console.log('IN USE EFFECT');
-    if (isElectron()) {
-      console.log("DashboardContainer mounted - Setting up student listeners")
-      // Pass 'dev' tenant for now - in future this will come from user login
-      const setupPromise = dispatch(setupStudentListeners('dev'))
+    // Initialize Firebase listeners with hardcoded 'dev' tenant
+    // In the future, this will come from user login
+    DatabaseHandler.initDatabaseHandler(dispatch, 'dev')
 
-      // Cleanup function
-      return () => {
-        console.log("DashboardContainer unmounting - Cleaning up student listeners")
-        // Cancel the thunk if still pending
-        setupPromise.abort()
-        
-        // Remove the listener if it was set up
-        interface WindowWithCleanup extends Window {
-          __studentListenerCleanup?: () => void
-        }
-        const electronWindow = window as WindowWithCleanup
-        if (electronWindow.__studentListenerCleanup) {
-          electronWindow.__studentListenerCleanup()
-          delete electronWindow.__studentListenerCleanup
-        }
-      }
-    }
   }, [dispatch])
 
   const handleNavigationClick = (item: NavigationItem) => {

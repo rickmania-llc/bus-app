@@ -203,3 +203,165 @@ If you must have component-controlled listeners, implement a **debounced setup**
 5. This prevents StrictMode double-mounting from creating duplicate listeners
 
 However, the singleton approach is recommended as it's simpler and more aligned with how Firebase listeners are designed to work.
+
+## Component-Initiated Flow Support
+
+If you prefer the flow where Dashboard initiates the listener setup, here's a modified approach that supports this while preventing duplicates:
+
+### Desired Flow
+1. Dashboard opens and sends tenant to Electron to initiate Firebase listeners (sends "dev")
+2. Electron fires initial listeners, does a `.once` to get all initial data, then sets all the added/removed listeners
+3. Fires the initial data back to React
+4. React gets the initial data, dispatches to Redux slice
+5. Additional updates get fired to React which dispatches for adding/removing individual items
+
+### Implementation for Component-Initiated Flow
+
+```javascript
+// In electron/main.js
+
+// Track active listeners by tenant-entity combination
+const activeListeners = new Map();
+
+ipcMain.handle('setup-students-listener', async (event, { tenant }) => {
+  const listenerKey = `students-${tenant}`;
+  
+  // Check if already setup for this tenant
+  if (activeListeners.has(listenerKey)) {
+    console.log(`Listeners already active for ${listenerKey}, re-sending current data`);
+    
+    // Just re-send the current data to this window
+    const db = getDb(tenant);
+    const snapshot = await db.ref('students').once('value');
+    
+    // Send to specific window that requested it
+    event.sender.send('students-updated', {
+      type: 'value',
+      data: snapshot.val() || {}
+    });
+    
+    return { success: true, message: 'Already setup - data resent' };
+  }
+  
+  console.log(`Setting up new listeners for ${listenerKey}`);
+  
+  // Initialize Firebase for tenant if needed
+  initializeFirebase(tenant);
+  
+  const db = getDb(tenant);
+  const studentsRef = db.ref('students');
+  
+  // Step 1: Get initial snapshot using .once()
+  const initialSnapshot = await studentsRef.once('value');
+  const initialData = initialSnapshot.val() || {};
+  
+  // Step 2: Send initial data immediately
+  sendToAllWindows('students-updated', {
+    type: 'value',
+    data: initialData
+  });
+  
+  // Step 3: Track which IDs we've already sent to prevent duplicates
+  const sentIds = new Set(Object.keys(initialData));
+  
+  // Step 4: Set up ongoing listeners with duplicate prevention
+  const listeners = {
+    childAdded: studentsRef.on('child_added', (snapshot) => {
+      const id = snapshot.key;
+      
+      // Skip if we already sent this in initial data
+      if (!sentIds.has(id)) {
+        sentIds.add(id);
+        sendToAllWindows('students-updated', {
+          type: 'child_added',
+          key: id,
+          data: snapshot.val()
+        });
+      }
+    }),
+    
+    childChanged: studentsRef.on('child_changed', (snapshot) => {
+      sendToAllWindows('students-updated', {
+        type: 'child_changed',
+        key: snapshot.key,
+        data: snapshot.val()
+      });
+    }),
+    
+    childRemoved: studentsRef.on('child_removed', (snapshot) => {
+      const id = snapshot.key;
+      sentIds.delete(id); // Remove from tracking
+      
+      sendToAllWindows('students-updated', {
+        type: 'child_removed',
+        key: id,
+        data: snapshot.val()
+      });
+    })
+  };
+  
+  // Store listener info for cleanup
+  activeListeners.set(listenerKey, {
+    ref: studentsRef,
+    listeners: listeners,
+    sentIds: sentIds
+  });
+  
+  return { success: true };
+});
+
+// Add cleanup handler that properly removes listeners
+ipcMain.handle('cleanup-students-listener', async (event, { tenant }) => {
+  const listenerKey = `students-${tenant}`;
+  
+  if (activeListeners.has(listenerKey)) {
+    const { ref } = activeListeners.get(listenerKey);
+    
+    // Remove all listeners
+    ref.off();
+    
+    // Remove from tracking
+    activeListeners.delete(listenerKey);
+    
+    console.log(`Cleaned up listeners for ${listenerKey}`);
+  }
+  
+  return { success: true };
+});
+```
+
+### React Component Setup
+
+```javascript
+// In DashboardContainer
+useEffect(() => {
+  let mounted = true;
+  
+  if (isElectron()) {
+    // Setup listeners when component mounts
+    dispatch(setupStudentListeners('dev'));
+    
+    // Cleanup when component unmounts
+    return () => {
+      mounted = false;
+      // Optional: Could call cleanup-students-listener here
+      // But with the activeListeners check, it's not necessary
+    };
+  }
+}, []); // Empty deps array - only run once per mount
+```
+
+### Key Benefits of This Approach
+
+1. **Supports your exact flow**: Dashboard initiates → `.once()` for initial → child listeners for updates
+2. **Prevents duplicates**: The `sentIds` Set tracks what's already been sent
+3. **Handles remounts**: The `activeListeners` Map ensures only one set of listeners per tenant
+4. **Clean separation**: Each tenant gets its own isolated listeners
+5. **Proper cleanup**: Can cleanly remove listeners when switching tenants
+
+### Why This Works Better
+
+- **Initial data arrives immediately** via `.once()` before child listeners are attached
+- **No duplicate child_added events** because we track sent IDs
+- **StrictMode safe** because second mount just gets data resent, doesn't create new listeners
+- **Tenant switching ready** with proper cleanup handlers
