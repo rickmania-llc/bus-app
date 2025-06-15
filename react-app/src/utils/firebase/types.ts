@@ -10,5 +10,5 @@ export interface ListenerInfo {
   listeners: {
     [key: string]: any;
   };
-  sentIds: Set<string>;
+  sentIds?: Set<string>; // Made optional since we're moving away from it
 }
