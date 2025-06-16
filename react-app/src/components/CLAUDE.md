@@ -108,10 +108,19 @@ Presentational React components that make up the user interface of the bus track
 - Responsive hover effects
 
 ### `side-panels/StudentSidePanel.tsx`
-**Purpose:** Side panel component for editing selected student information
+**Purpose:** Side panel component for editing selected student information with full CRUD operations
 **Key Functions:**
-- `handleInputChange` - Updates form state for controlled inputs
-- `handleSubmit` - Handles form submission (TODO: Redux integration)
+- `handleInputChange` - Updates form state for controlled inputs, clears errors on change
+- `handleSubmit` - Saves student updates via DatabaseHandler.updateStudent
+  - Handles date conversion for DOB field
+  - Shows loading state during save
+  - Closes panel on success
+  - Displays error messages on failure
+- `handleDelete` - Deletes student via DatabaseHandler.deleteStudent
+  - Shows confirmation modal before deletion
+  - Handles loading state during deletion
+  - Closes panel on success
+  - Displays error messages on failure
 
 **Props Interface:**
 - `student: Student` - Selected student data
@@ -122,7 +131,11 @@ Presentational React components that make up the user interface of the bus track
 - Form for editing student details (name, DOB, address, picture URL)
 - Profile picture display with fallback
 - Guardian relationship display (primary and secondary)
-- Save and cancel actions
+- Save functionality with loading state and error handling
+- Delete functionality with confirmation modal
+- Loading spinners during async operations
+- Error message display with user-friendly messages
+- Disabled form fields during save/delete operations
 - Responsive form layout
 - Smooth close animation
 
@@ -136,7 +149,7 @@ Presentational React components that make up the user interface of the bus track
 2. **Panel Switching:** MainPanel receives selectedItem → renderContent() matches to panel → Returns appropriate component
 3. **State Management:** Local state in NavigationPanel for UI → Lifted state in container for app state
 4. **Student Selection Flow:** User clicks StudentCard → handleStudentSelect toggles selection → Side panel renders with student data
-5. **Entity Editing Flow:** Side panel displays form → User edits fields → Save triggers Redux update → Panel closes on success
+5. **Entity Editing Flow:** Side panel displays form → User edits fields → Save calls DatabaseHandler CRUD method → Loading state shown → Panel closes on success → Redux updates via listeners
 
 ## Performance Considerations
 - Panels are not lazy loaded (could be optimized for larger app)

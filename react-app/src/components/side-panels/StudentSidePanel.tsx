@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import { X, User, Calendar, MapPin, Users } from 'lucide-react'
+import { X, User, Calendar, MapPin, Users, Trash2 } from 'lucide-react'
 import { Student } from '../../types/models/Student'
 import { Guardian } from '../../types/models/Guardian'
+import DatabaseHandler from '../../utils/firebase/databaseHandler'
 
 interface StudentSidePanelProps {
   student: Student
@@ -20,6 +21,10 @@ const StudentSidePanel = ({
     address: student.address,
     pictureUrl: student.pictureUrl || ''
   })
+  const [isSaving, setIsSaving] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   
   useEffect(() => {
     setFormData({
@@ -36,12 +41,46 @@ const StudentSidePanel = ({
       ...prev,
       [name]: value
     }))
+    setError(null) // Clear error when user types
   }
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: Implement update logic with Redux
-    console.log('Update student:', { id: student.id, ...formData })
+    setError(null)
+    setIsSaving(true)
+    
+    try {
+      const updates: Partial<Omit<Student, 'id' | 'createdAt'>> = {
+        name: formData.name,
+        dob: formData.dob, // DatabaseHandler will convert this to timestamp
+        address: formData.address,
+        pictureUrl: formData.pictureUrl || null
+      }
+      
+      await DatabaseHandler.updateStudent(student.id, updates)
+      // Success - close panel (Redux will update via listeners)
+      onClose()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update student')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+  
+  const handleDelete = async () => {
+    setError(null)
+    setIsDeleting(true)
+    
+    try {
+      await DatabaseHandler.deleteStudent(student.id)
+      // Success - close panel (Redux will update via listeners)
+      onClose()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete student')
+      setShowDeleteConfirm(false)
+    } finally {
+      setIsDeleting(false)
+    }
   }
   
   const primaryGuardian = guardians.find(g => g.students[student.id]?.isPrimaryGuardian)
@@ -61,6 +100,12 @@ const StudentSidePanel = ({
       
       <div className="flex-1 overflow-y-auto">
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+              <p className="text-sm text-red-800">{error}</p>
+            </div>
+          )}
+          
           <div className="flex justify-center mb-4">
             {student.pictureUrl ? (
               <img
@@ -92,7 +137,8 @@ const StudentSidePanel = ({
               name="name"
               value={formData.name}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+              disabled={isSaving || isDeleting}
               required
             />
           </div>
@@ -107,7 +153,8 @@ const StudentSidePanel = ({
               name="dob"
               value={formData.dob}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+              disabled={isSaving || isDeleting}
               required
             />
           </div>
@@ -122,7 +169,8 @@ const StudentSidePanel = ({
               value={formData.address}
               onChange={handleInputChange}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+              disabled={isSaving || isDeleting}
               required
             />
           </div>
@@ -137,7 +185,8 @@ const StudentSidePanel = ({
               value={formData.pictureUrl}
               onChange={handleInputChange}
               placeholder="https://example.com/photo.jpg"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+              disabled={isSaving || isDeleting}
             />
           </div>
           
@@ -173,23 +222,93 @@ const StudentSidePanel = ({
             )}
           </div>
           
-          <div className="pt-4 flex gap-2">
-            <button
-              type="submit"
-              className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Save Changes
-            </button>
+          <div className="pt-4 space-y-2">
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
+                disabled={isSaving || isDeleting}
+              >
+                {isSaving ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Saving...
+                  </>
+                ) : (
+                  'Save Changes'
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors disabled:cursor-not-allowed"
+                disabled={isSaving || isDeleting}
+              >
+                Cancel
+              </button>
+            </div>
+            
             <button
               type="button"
-              onClick={onClose}
-              className="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors"
+              onClick={() => setShowDeleteConfirm(true)}
+              className="w-full bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
+              disabled={isSaving || isDeleting}
             >
-              Cancel
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete Student
             </button>
           </div>
         </form>
       </div>
+      
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
+            <h3 className="text-lg font-semibold mb-4">Confirm Delete</h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete <span className="font-semibold">{student.name}</span>? 
+              This action cannot be undone.
+            </p>
+            
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                <p className="text-sm text-red-800">{error}</p>
+              </div>
+            )}
+            
+            <div className="flex gap-3">
+              <button
+                onClick={handleDelete}
+                className="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Deleting...
+                  </>
+                ) : (
+                  'Delete'
+                )}
+              </button>
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors disabled:cursor-not-allowed"
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
