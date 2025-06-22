@@ -27,6 +27,7 @@ const StudentSidePanel = ({
   const [isDeleting, setIsDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
   
   useEffect(() => {
     if (mode === 'create') {
@@ -75,9 +76,11 @@ const StudentSidePanel = ({
         }
         
         await DatabaseHandler.createStudent(newStudent)
-        console.log('Student created successfully')
         
-        // Reset form data after successful creation
+        // Show success message
+        setSuccessMessage(`Student "${formData.name}" created successfully!`)
+        
+        // Reset form data after successful creation to allow adding another student
         setFormData({
           name: '',
           dob: '',
@@ -88,9 +91,10 @@ const StudentSidePanel = ({
         // Clear any errors
         setError(null)
         
-        // Success - close panel (Redux will update via listeners)
-        console.log('Calling onClose')
-        onClose()
+        // Clear success message after 3 seconds
+        setTimeout(() => setSuccessMessage(null), 3000)
+        
+        // Don't close the panel - let user add another student or close manually
       } else {
         // Update existing student
         if (!student) {
@@ -105,8 +109,14 @@ const StudentSidePanel = ({
         }
         
         await DatabaseHandler.updateStudent(student.id, updates)
-        // Success - close panel (Redux will update via listeners)
-        onClose()
+        
+        // Show success message
+        setSuccessMessage(`Student "${formData.name}" updated successfully!`)
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => setSuccessMessage(null), 3000)
+        
+        // Success - don't close panel, keep it open for further edits
       }
     } catch (err) {
       console.error('Error in handleSubmit:', err)
@@ -154,6 +164,12 @@ const StudentSidePanel = ({
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
               <p className="text-sm text-red-800">{error}</p>
+            </div>
+          )}
+          
+          {successMessage && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+              <p className="text-sm text-green-800">{successMessage}</p>
             </div>
           )}
           
