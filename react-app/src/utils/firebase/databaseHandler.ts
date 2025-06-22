@@ -455,7 +455,9 @@ class DatabaseHandler {
         }
       });
 
-      if (!response.data.success) {
+      // Backend returns 201 status for successful creation
+      // The response only contains { message: "..." } without success field
+      if (response.status !== 201) {
         throw new Error(response.data.message || 'Failed to create student');
       }
     } catch (error) {
@@ -487,7 +489,9 @@ class DatabaseHandler {
         }
       });
 
-      if (!response.data.success) {
+      // Backend returns 200 status for successful update
+      // The response only contains { message: "..." } without success field
+      if (response.status !== 200) {
         throw new Error(response.data.message || 'Failed to update student');
       }
     } catch (error) {
@@ -515,7 +519,9 @@ class DatabaseHandler {
         }
       });
 
-      if (!response.data.success) {
+      // Backend returns 200 status for successful deletion
+      // The response only contains { message: "..." } without success field
+      if (response.status !== 200) {
         throw new Error(response.data.message || 'Failed to delete student');
       }
     } catch (error) {

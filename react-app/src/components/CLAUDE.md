@@ -119,6 +119,8 @@ Presentational React components that make up the user interface of the bus track
 - `handleInputChange` - Updates form state for controlled inputs, clears errors on change
 - `handleSubmit` - Handles both create and update operations
   - In create mode: Calls DatabaseHandler.createStudent with new student data
+    - Resets form to blank values after successful creation
+    - Ensures clean state for subsequent creates
   - In edit mode: Calls DatabaseHandler.updateStudent with changes
   - Handles date conversion for DOB field
   - Shows loading state during save
@@ -170,7 +172,7 @@ Presentational React components that make up the user interface of the bus track
 3. **State Management:** Local state in NavigationPanel for UI → Lifted state in container for app state
 4. **Student Selection Flow:** User clicks StudentCard → handleStudentSelect toggles selection → Side panel renders with student data
 5. **Entity Editing Flow:** Side panel displays form → User edits fields → Save calls DatabaseHandler CRUD method → Loading state shown → Panel closes on success → Redux updates via listeners
-6. **Student Creation Flow:** User clicks "Add Student" → handleCreateClick sets isCreating → StudentSidePanel opens in create mode → User fills form → Submit calls DatabaseHandler.createStudent → Panel closes → Redux updates via listeners
+6. **Student Creation Flow:** User clicks "Add Student" → handleCreateClick sets isCreating → StudentSidePanel opens in create mode → User fills form → Submit calls DatabaseHandler.createStudent → Form resets to blank → Panel closes → Redux updates via listeners
 
 ## Performance Considerations
 - Panels are not lazy loaded (could be optimized for larger app)

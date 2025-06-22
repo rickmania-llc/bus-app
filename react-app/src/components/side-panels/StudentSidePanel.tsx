@@ -75,7 +75,21 @@ const StudentSidePanel = ({
         }
         
         await DatabaseHandler.createStudent(newStudent)
+        console.log('Student created successfully')
+        
+        // Reset form data after successful creation
+        setFormData({
+          name: '',
+          dob: '',
+          address: '',
+          pictureUrl: ''
+        })
+        
+        // Clear any errors
+        setError(null)
+        
         // Success - close panel (Redux will update via listeners)
+        console.log('Calling onClose')
         onClose()
       } else {
         // Update existing student
@@ -95,6 +109,7 @@ const StudentSidePanel = ({
         onClose()
       }
     } catch (err) {
+      console.error('Error in handleSubmit:', err)
       setError(err instanceof Error ? err.message : mode === 'create' ? 'Failed to create student' : 'Failed to update student')
     } finally {
       setIsSaving(false)
