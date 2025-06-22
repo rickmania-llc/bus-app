@@ -29,15 +29,26 @@ const StudentSidePanel = ({
   const [error, setError] = useState<string | null>(null)
   
   useEffect(() => {
-    if (student) {
+    if (mode === 'create') {
+      // Reset form to blank values for create mode
+      setFormData({
+        name: '',
+        dob: '',
+        address: '',
+        pictureUrl: ''
+      })
+      setError(null) // Clear any previous errors
+    } else if (student) {
+      // Populate form with student data for edit mode
       setFormData({
         name: student.name,
         dob: new Date(student.dob).toISOString().split('T')[0],
         address: student.address,
         pictureUrl: student.pictureUrl || ''
       })
+      setError(null)
     }
-  }, [student])
+  }, [student, mode])
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -74,7 +85,7 @@ const StudentSidePanel = ({
         
         const updates: Partial<Omit<Student, 'id' | 'createdAt'>> = {
           name: formData.name,
-          dob: formData.dob, // DatabaseHandler will convert this to timestamp
+          dob: new Date(formData.dob).getTime(), // Convert to timestamp
           address: formData.address,
           pictureUrl: formData.pictureUrl || undefined
         }

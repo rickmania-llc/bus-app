@@ -13,6 +13,12 @@ export default function StudentsMainPanel() {
   const { guardians } = useSelector((state: RootState) => state.guardians)
   
   const handleStudentSelect = (studentId: string) => {
+    // Exit create mode if we're in it
+    if (isCreating) {
+      setIsCreating(false)
+    }
+    
+    // Toggle selection as before
     setSelectedStudentId(studentId === selectedStudentId ? null : studentId)
   }
   

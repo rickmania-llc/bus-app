@@ -480,14 +480,8 @@ class DatabaseHandler {
       throw new Error('DatabaseHandler not initialized');
     }
 
-    // Convert date string to timestamp if dob is being updated
-    const processedUpdates = { ...updates };
-    if (processedUpdates.dob && typeof processedUpdates.dob !== 'number') {
-      processedUpdates.dob = new Date(processedUpdates.dob).getTime();
-    }
-
     try {
-      const response = await axios.put(`${funcURL}studentCrud/${id}`, processedUpdates, {
+      const response = await axios.put(`${funcURL}studentCrud/${id}`, updates, {
         headers: {
           'Tenant': this.tenant
         }

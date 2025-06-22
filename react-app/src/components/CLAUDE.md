@@ -67,7 +67,7 @@ Presentational React components that make up the user interface of the bus track
 ### `main-panel/StudentsMainPanel.tsx`
 **Purpose:** Students management panel with card display, creation, and editing capabilities
 **Key Functions:**
-- `handleStudentSelect(studentId: string)` - Updates selectedStudentId state, toggles selection
+- `handleStudentSelect(studentId: string)` - Updates selectedStudentId state, toggles selection, exits create mode if active
 - `handleClearSelection()` - Clears selected student
 - `handleCreateClick()` - Triggers create mode for new student, clears any existing selection
 - `handleCloseCreate()` - Closes create mode panel
@@ -78,6 +78,7 @@ Presentational React components that make up the user interface of the bus track
 - "Add Student" button with Plus icon in header
 - Local selection state management using useState
 - Dual state management for selection and creation modes
+- Automatic mode switching: selecting a student exits create mode
 - Side panel for editing selected students
 - Side panel for creating new students
 - Loading states with skeleton cards
@@ -140,6 +141,8 @@ Presentational React components that make up the user interface of the bus track
 - Dual-mode operation (create/edit) with appropriate UI changes
 - Context-aware title ("Add Student" vs "Edit Student")
 - Form for entering/editing student details (name, DOB, address, picture URL)
+- Automatic form reset when switching to create mode
+- Form data persistence when editing existing students
 - Profile picture display with fallback (edit mode only)
 - Guardian relationship display (primary and secondary) in edit mode
 - Save functionality with context-aware button text
@@ -149,6 +152,12 @@ Presentational React components that make up the user interface of the bus track
 - Disabled form fields during save/delete operations
 - Responsive form layout
 - Smooth close animation
+
+**State Management:**
+- useEffect hook monitors mode and student props
+- Resets form to blank values when mode === 'create'
+- Populates form with student data when mode === 'edit' and student exists
+- Clears errors on mode change for better UX
 
 ## Key Dependencies
 - `lucide-react` - Icon library for navigation and UI elements
