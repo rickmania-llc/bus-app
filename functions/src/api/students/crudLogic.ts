@@ -19,7 +19,7 @@ const parseDateOfBirth = (dob: any): { isValid: boolean, timestamp?: number, err
   if (typeof dob === 'string') {
     const datePattern = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
     const match = dob.match(datePattern);
-    
+
     if (!match) {
       return { isValid: false, error: 'Date format must be MM/DD/YYYY (e.g., "01/26/1981" or "2/5/1990")' };
     }
@@ -58,11 +58,11 @@ const parseDateOfBirth = (dob: any): { isValid: boolean, timestamp?: number, err
 export const createStudent = async (req: Request, studentRef: database.Reference): Promise<{success: boolean, message: string}> => {
   console.log('In student create function');
   console.log(req.body);
-  
+
   const body = req.body;
   // pictureUrl is now optional
   const requiredFields = ['name', 'dob', 'address'];
-  
+
   // Basic validation for required fields
   for (const field of requiredFields) {
     console.log(`testing ${field}`);
@@ -104,7 +104,7 @@ export const createStudent = async (req: Request, studentRef: database.Reference
     address: body.address,
     // Set pictureUrl to null if not provided, otherwise use the provided value
     pictureUrl: (body.pictureUrl !== undefined && body.pictureUrl !== '') ? body.pictureUrl : null,
-    createdAt: Date.now()
+    createdAt: Date.now(),
   };
 
   // Adding student to database
@@ -169,13 +169,14 @@ export const updateStudent = async (req: Request, studentRef: database.Reference
 
   if (req.body.pictureUrl !== undefined) {
     if (req.body.pictureUrl === null || req.body.pictureUrl === '') {
-      return {success: false, message: 'Picture URL cannot be empty'};
+      updateObj.pictureUrl = '';
+    } else {
+      const urlPattern = /^https?:\/\/.+/;
+      if (!urlPattern.test(req.body.pictureUrl)) {
+        return {success: false, message: 'Picture URL must be a valid HTTP/HTTPS URL'};
+      }
+      updateObj.pictureUrl = req.body.pictureUrl;
     }
-    const urlPattern = /^https?:\/\/.+/;
-    if (!urlPattern.test(req.body.pictureUrl)) {
-      return {success: false, message: 'Picture URL must be a valid HTTP/HTTPS URL'};
-    }
-    updateObj.pictureUrl = req.body.pictureUrl;
   }
 
   // Check if there are any fields to update
@@ -226,11 +227,11 @@ export const removeStudentFromGuardians = async (
 ): Promise<void> => {
   // Get all guardians
   const snapshot = await guardianRef.once('value');
-  
+
   if (snapshot.val() !== null) {
     const guardians = snapshot.val();
     const updates: any = {};
-    
+
     for (const guardianId in guardians) {
       const guardian = guardians[guardianId];
       if (guardian.students && guardian.students[studentId]) {
@@ -238,11 +239,11 @@ export const removeStudentFromGuardians = async (
         updates[`${guardianId}/students/${studentId}`] = null;
       }
     }
-    
+
     // Apply all updates at once
     if (Object.keys(updates).length > 0) {
       await guardianRef.update(updates);
       console.log(`Removed student ${studentId} from ${Object.keys(updates).length} guardian(s)`);
     }
   }
-}; 
+};

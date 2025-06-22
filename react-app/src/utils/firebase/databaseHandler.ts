@@ -1,5 +1,6 @@
-import { ref, onValue, onChildAdded, onChildChanged, onChildRemoved, off, DataSnapshot, query, orderByChild, startAfter } from 'firebase/database';
-import { initFirebase, database } from './authHandler';
+import { ref, onValue, onChildAdded, onChildChanged, onChildRemoved, off, query, orderByChild, startAfter } from 'firebase/database';
+import { initFirebase, database, funcURL } from './authHandler';
+import axios from 'axios';
 import type { AppDispatch } from '../../redux/store';
 import type { Student } from '../../types/models/Student';
 import type { Guardian } from '../../types/models/Guardian';
@@ -67,7 +68,10 @@ class DatabaseHandler {
       off(studentsRef, 'value');
 
       // Get the highest createdAt timestamp to use as a starting point
-      const timestamps = Object.values(initialData).map((student: any) => student.createdAt || 0);
+      const timestamps = Object.values(initialData).map((student: unknown) => {
+        const s = student as { createdAt?: number };
+        return s.createdAt || 0;
+      });
       const lastTimestamp = timestamps.length > 0 ? Math.max(...timestamps) : 0;
       console.log('[Students] Last timestamp for future queries:', lastTimestamp);
 
@@ -165,7 +169,10 @@ class DatabaseHandler {
       off(guardiansRef, 'value');
 
       // Get the highest createdAt timestamp to use as a starting point
-      const timestamps = Object.values(initialData).map((guardian: any) => guardian.createdAt || 0);
+      const timestamps = Object.values(initialData).map((guardian: unknown) => {
+        const g = guardian as { createdAt?: number };
+        return g.createdAt || 0;
+      });
       const lastTimestamp = timestamps.length > 0 ? Math.max(...timestamps) : 0;
       console.log('[Guardians] Last timestamp for future queries:', lastTimestamp);
 
@@ -261,7 +268,10 @@ class DatabaseHandler {
       off(driversRef, 'value');
 
       // Get the highest createdAt timestamp to use as a starting point
-      const timestamps = Object.values(initialData).map((driver: any) => driver.createdAt || 0);
+      const timestamps = Object.values(initialData).map((driver: unknown) => {
+        const d = driver as { createdAt?: number };
+        return d.createdAt || 0;
+      });
       const lastTimestamp = timestamps.length > 0 ? Math.max(...timestamps) : 0;
       console.log('[Drivers] Last timestamp for future queries:', lastTimestamp);
 
@@ -357,7 +367,10 @@ class DatabaseHandler {
       off(routesRef, 'value');
 
       // Get the highest createdAt timestamp to use as a starting point
-      const timestamps = Object.values(initialData).map((route: any) => route.createdAt || 0);
+      const timestamps = Object.values(initialData).map((route: unknown) => {
+        const r = route as { createdAt?: number };
+        return r.createdAt || 0;
+      });
       const lastTimestamp = timestamps.length > 0 ? Math.max(...timestamps) : 0;
       console.log('[Routes] Last timestamp for future queries:', lastTimestamp);
 
@@ -423,6 +436,100 @@ class DatabaseHandler {
         listeners
       });
     }, { onlyOnce: true });
+  }
+
+  /**
+   * Creates a new student via Firebase Cloud Functions
+   * @param student - Student data without id and createdAt (handled by backend)
+   * @returns Promise that resolves when the student is created
+   */
+  static async createStudent(student: Omit<Student, 'id' | 'createdAt'>): Promise<void> {
+    if (!this.tenant) {
+      throw new Error('DatabaseHandler not initialized');
+    }
+
+    try {
+      const response = await axios.post(`${funcURL}studentCrud`, student, {
+        headers: {
+          'Tenant': this.tenant
+        }
+      });
+
+      // Backend returns 201 status for successful creation
+      // The response only contains { message: "..." } without success field
+      if (response.status !== 201) {
+        throw new Error(response.data.message || 'Failed to create student');
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || error.message);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Updates an existing student via Firebase Cloud Functions
+   * @param id - The student ID to update
+   * @param updates - Partial student data to update (excluding id and createdAt)
+   * @returns Promise that resolves when the student is updated
+   */
+  static async updateStudent(
+    id: string, 
+    updates: Partial<Omit<Student, 'id' | 'createdAt'>>
+  ): Promise<void> {
+    if (!this.tenant) {
+      throw new Error('DatabaseHandler not initialized');
+    }
+
+    try {
+      const response = await axios.put(`${funcURL}studentCrud/${id}`, updates, {
+        headers: {
+          'Tenant': this.tenant
+        }
+      });
+
+      // Backend returns 200 status for successful update
+      // The response only contains { message: "..." } without success field
+      if (response.status !== 200) {
+        throw new Error(response.data.message || 'Failed to update student');
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || error.message);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Deletes a student via Firebase Cloud Functions
+   * @param id - The student ID to delete
+   * @returns Promise that resolves when the student is deleted
+   */
+  static async deleteStudent(id: string): Promise<void> {
+    if (!this.tenant) {
+      throw new Error('DatabaseHandler not initialized');
+    }
+
+    try {
+      const response = await axios.delete(`${funcURL}studentCrud/${id}`, {
+        headers: {
+          'Tenant': this.tenant
+        }
+      });
+
+      // Backend returns 200 status for successful deletion
+      // The response only contains { message: "..." } without success field
+      if (response.status !== 200) {
+        throw new Error(response.data.message || 'Failed to delete student');
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || error.message);
+      }
+      throw error;
+    }
   }
 
   static cleanup() {

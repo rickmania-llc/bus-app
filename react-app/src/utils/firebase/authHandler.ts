@@ -1,6 +1,5 @@
 import { initializeApp, FirebaseApp } from 'firebase/app';
 import { getDatabase, Database } from 'firebase/database';
-import { getAuth } from 'firebase/auth';
 
 let firebaseApp: FirebaseApp;
 let database: Database;
@@ -41,4 +40,4 @@ const setUserPermissions = (userRole: string) => {
   console.log('Setting permissions for role:', userRole);
 };
 
-export { initFirebase, firebaseApp, database, funcURL };
+export { initFirebase, firebaseApp, database, funcURL, setUserPermissions };

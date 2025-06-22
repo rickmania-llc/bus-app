@@ -171,6 +171,7 @@ Every issue must include:
 - REST API endpoints in `/functions/src/api/`
 - Redux store for state management in React app
 - Direct Firebase integration in React app
+- DatabaseHandler static CRUD methods for API operations (createStudent, updateStudent, deleteStudent)
 
 ### Database Patterns
 - Firebase Realtime Database structure documented in `/docs/project/data/`

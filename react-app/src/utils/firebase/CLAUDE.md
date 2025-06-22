@@ -30,7 +30,7 @@ Direct Firebase integration for the React admin dashboard, providing real-time d
 - `funcURL` - Cloud Functions endpoint URL
 
 ### `databaseHandler.ts`
-**Purpose:** Manages all real-time database listeners and Redux dispatching
+**Purpose:** Manages all real-time database listeners, Redux dispatching, and CRUD operations via Cloud Functions
 **Key Functions:**
 - `initDatabaseHandler(dispatch: AppDispatch, tenant: string)` - Main initialization
   - Calls initFirebase from authHandler
@@ -43,6 +43,18 @@ Direct Firebase integration for the React admin dashboard, providing real-time d
 - `initGuardianListeners()` - Sets up guardian entity listeners
 - `initDriverListeners()` - Sets up driver entity listeners
 - `initRouteListeners()` - Sets up route entity listeners
+- `createStudent(student: Omit<Student, 'id' | 'createdAt'>)` - Creates new student via API
+  - Sends POST request to Firebase Cloud Functions
+  - Handles tenant header automatically
+  - Returns promise for loading state management
+- `updateStudent(id: string, updates: Partial<Omit<Student, 'id' | 'createdAt'>>)` - Updates existing student
+  - Sends PUT request with student ID in URL
+  - Converts date strings to timestamps automatically
+  - Handles validation errors from API
+- `deleteStudent(id: string)` - Deletes student via API
+  - Sends DELETE request with student ID
+  - Handles guardian reference cleanup (done by backend)
+  - Returns promise for UI state management
 - `cleanup()` - Removes all active listeners
 
 **Pattern for Each Entity:**

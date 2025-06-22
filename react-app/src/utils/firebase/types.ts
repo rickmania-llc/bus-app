@@ -1,3 +1,5 @@
+import type { DatabaseReference, Unsubscribe } from 'firebase/database';
+
 // Firebase-specific type definitions
 export interface FirebaseUpdate<T> {
   type: 'value' | 'child_added' | 'child_changed' | 'child_removed';
@@ -6,9 +8,9 @@ export interface FirebaseUpdate<T> {
 }
 
 export interface ListenerInfo {
-  ref: any;
+  ref: DatabaseReference;
   listeners: {
-    [key: string]: any;
+    [key: string]: Unsubscribe;
   };
   sentIds?: Set<string>; // Made optional since we're moving away from it
 }
