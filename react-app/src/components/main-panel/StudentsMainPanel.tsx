@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
+import { Plus } from 'lucide-react'
 import { RootState } from '../../redux/store'
 import StudentCard from '../cards/StudentCard'
 import StudentSidePanel from '../side-panels/StudentSidePanel'
 
 export default function StudentsMainPanel() {
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null)
+  const [isCreating, setIsCreating] = useState(false)
   
   const { students, loading, error } = useSelector((state: RootState) => state.students)
   const { guardians } = useSelector((state: RootState) => state.guardians)
@@ -16,6 +18,15 @@ export default function StudentsMainPanel() {
   
   const handleClearSelection = () => {
     setSelectedStudentId(null)
+  }
+  
+  const handleCreateClick = () => {
+    setIsCreating(true)
+    setSelectedStudentId(null) // Clear any existing selection
+  }
+  
+  const handleCloseCreate = () => {
+    setIsCreating(false)
   }
   
   const selectedStudent = selectedStudentId 
@@ -32,7 +43,16 @@ export default function StudentsMainPanel() {
     return (
       <div className="p-8">
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <h1 className="text-3xl font-bold text-gray-800 mb-6">Students</h1>
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-3xl font-bold text-gray-800">Students</h1>
+            <button
+              onClick={handleCreateClick}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+            >
+              <Plus className="w-5 h-5" />
+              Add Student
+            </button>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="bg-gray-100 rounded-lg p-4 animate-pulse">
@@ -51,7 +71,16 @@ export default function StudentsMainPanel() {
     return (
       <div className="p-8">
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <h1 className="text-3xl font-bold text-gray-800 mb-4">Students</h1>
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-3xl font-bold text-gray-800">Students</h1>
+            <button
+              onClick={handleCreateClick}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+            >
+              <Plus className="w-5 h-5" />
+              Add Student
+            </button>
+          </div>
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <p className="text-red-800">Error loading students: {error}</p>
           </div>
@@ -64,7 +93,16 @@ export default function StudentsMainPanel() {
     <div className="flex h-full">
       <div className={`flex-1 p-8 transition-all duration-300 ${selectedStudent ? 'pr-4' : ''}`}>
         <div className="bg-white rounded-lg shadow-sm p-6 h-full flex flex-col">
-          <h1 className="text-3xl font-bold text-gray-800 mb-6">Students</h1>
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-3xl font-bold text-gray-800">Students</h1>
+            <button
+              onClick={handleCreateClick}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+            >
+              <Plus className="w-5 h-5" />
+              Add Student
+            </button>
+          </div>
           
           {students.length === 0 ? (
             <div className="flex-1 flex items-center justify-center">
@@ -91,11 +129,19 @@ export default function StudentsMainPanel() {
         </div>
       </div>
       
-      {selectedStudent && (
+      {selectedStudent && !isCreating && (
         <StudentSidePanel
           student={selectedStudent}
           guardians={guardians.filter(g => g.students[selectedStudent.id])}
           onClose={handleClearSelection}
+        />
+      )}
+      
+      {isCreating && (
+        <StudentSidePanel
+          mode="create"
+          guardians={[]}
+          onClose={handleCloseCreate}
         />
       )}
     </div>

@@ -65,16 +65,21 @@ Presentational React components that make up the user interface of the bus track
 - Route creation and editing
 
 ### `main-panel/StudentsMainPanel.tsx`
-**Purpose:** Students management panel with card display and editing capabilities
+**Purpose:** Students management panel with card display, creation, and editing capabilities
 **Key Functions:**
 - `handleStudentSelect(studentId: string)` - Updates selectedStudentId state, toggles selection
 - `handleClearSelection()` - Clears selected student
+- `handleCreateClick()` - Triggers create mode for new student, clears any existing selection
+- `handleCloseCreate()` - Closes create mode panel
 - `getPrimaryGuardian(studentId: string)` - Finds primary guardian for a student
 
 **Features:**
 - Card-based student display with grid layout
+- "Add Student" button with Plus icon in header
 - Local selection state management using useState
+- Dual state management for selection and creation modes
 - Side panel for editing selected students
+- Side panel for creating new students
 - Loading states with skeleton cards
 - Empty state messaging
 - Error state handling
@@ -108,31 +113,37 @@ Presentational React components that make up the user interface of the bus track
 - Responsive hover effects
 
 ### `side-panels/StudentSidePanel.tsx`
-**Purpose:** Side panel component for editing selected student information with full CRUD operations
+**Purpose:** Side panel component for creating and editing student information with full CRUD operations
 **Key Functions:**
 - `handleInputChange` - Updates form state for controlled inputs, clears errors on change
-- `handleSubmit` - Saves student updates via DatabaseHandler.updateStudent
+- `handleSubmit` - Handles both create and update operations
+  - In create mode: Calls DatabaseHandler.createStudent with new student data
+  - In edit mode: Calls DatabaseHandler.updateStudent with changes
   - Handles date conversion for DOB field
   - Shows loading state during save
   - Closes panel on success
-  - Displays error messages on failure
+  - Displays context-aware error messages on failure
 - `handleDelete` - Deletes student via DatabaseHandler.deleteStudent
+  - Only available in edit mode
   - Shows confirmation modal before deletion
   - Handles loading state during deletion
   - Closes panel on success
   - Displays error messages on failure
 
 **Props Interface:**
-- `student: Student` - Selected student data
+- `mode?: 'edit' | 'create'` - Determines panel behavior (defaults to 'edit')
+- `student?: Student` - Selected student data (optional for create mode)
 - `guardians: Guardian[]` - List of guardians associated with student
 - `onClose: () => void` - Callback to close the panel
 
 **Features:**
-- Form for editing student details (name, DOB, address, picture URL)
-- Profile picture display with fallback
-- Guardian relationship display (primary and secondary)
-- Save functionality with loading state and error handling
-- Delete functionality with confirmation modal
+- Dual-mode operation (create/edit) with appropriate UI changes
+- Context-aware title ("Add Student" vs "Edit Student")
+- Form for entering/editing student details (name, DOB, address, picture URL)
+- Profile picture display with fallback (edit mode only)
+- Guardian relationship display (primary and secondary) in edit mode
+- Save functionality with context-aware button text
+- Delete functionality with confirmation modal (edit mode only)
 - Loading spinners during async operations
 - Error message display with user-friendly messages
 - Disabled form fields during save/delete operations
@@ -150,6 +161,7 @@ Presentational React components that make up the user interface of the bus track
 3. **State Management:** Local state in NavigationPanel for UI → Lifted state in container for app state
 4. **Student Selection Flow:** User clicks StudentCard → handleStudentSelect toggles selection → Side panel renders with student data
 5. **Entity Editing Flow:** Side panel displays form → User edits fields → Save calls DatabaseHandler CRUD method → Loading state shown → Panel closes on success → Redux updates via listeners
+6. **Student Creation Flow:** User clicks "Add Student" → handleCreateClick sets isCreating → StudentSidePanel opens in create mode → User fills form → Submit calls DatabaseHandler.createStudent → Panel closes → Redux updates via listeners
 
 ## Performance Considerations
 - Panels are not lazy loaded (could be optimized for larger app)

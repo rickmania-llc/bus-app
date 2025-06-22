@@ -5,21 +5,23 @@ import { Guardian } from '../../types/models/Guardian'
 import DatabaseHandler from '../../utils/firebase/databaseHandler'
 
 interface StudentSidePanelProps {
-  student: Student
+  mode?: 'edit' | 'create'
+  student?: Student
   guardians: Guardian[]
   onClose: () => void
 }
 
 const StudentSidePanel = ({ 
+  mode = 'edit',
   student, 
   guardians, 
   onClose 
 }: StudentSidePanelProps) => {
   const [formData, setFormData] = useState({
-    name: student.name,
-    dob: new Date(student.dob).toISOString().split('T')[0],
-    address: student.address,
-    pictureUrl: student.pictureUrl || ''
+    name: student?.name || '',
+    dob: student ? new Date(student.dob).toISOString().split('T')[0] : '',
+    address: student?.address || '',
+    pictureUrl: student?.pictureUrl || ''
   })
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -27,12 +29,14 @@ const StudentSidePanel = ({
   const [error, setError] = useState<string | null>(null)
   
   useEffect(() => {
-    setFormData({
-      name: student.name,
-      dob: new Date(student.dob).toISOString().split('T')[0],
-      address: student.address,
-      pictureUrl: student.pictureUrl || ''
-    })
+    if (student) {
+      setFormData({
+        name: student.name,
+        dob: new Date(student.dob).toISOString().split('T')[0],
+        address: student.address,
+        pictureUrl: student.pictureUrl || ''
+      })
+    }
   }, [student])
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -50,24 +54,45 @@ const StudentSidePanel = ({
     setIsSaving(true)
     
     try {
-      const updates: Partial<Omit<Student, 'id' | 'createdAt'>> = {
-        name: formData.name,
-        dob: formData.dob, // DatabaseHandler will convert this to timestamp
-        address: formData.address,
-        pictureUrl: formData.pictureUrl || null
+      if (mode === 'create') {
+        // Create new student
+        const newStudent: Omit<Student, 'id' | 'createdAt'> = {
+          name: formData.name,
+          dob: new Date(formData.dob).getTime(), // Convert to timestamp
+          address: formData.address,
+          pictureUrl: formData.pictureUrl || ''
+        }
+        
+        await DatabaseHandler.createStudent(newStudent)
+        // Success - close panel (Redux will update via listeners)
+        onClose()
+      } else {
+        // Update existing student
+        if (!student) {
+          throw new Error('No student to update')
+        }
+        
+        const updates: Partial<Omit<Student, 'id' | 'createdAt'>> = {
+          name: formData.name,
+          dob: formData.dob, // DatabaseHandler will convert this to timestamp
+          address: formData.address,
+          pictureUrl: formData.pictureUrl || undefined
+        }
+        
+        await DatabaseHandler.updateStudent(student.id, updates)
+        // Success - close panel (Redux will update via listeners)
+        onClose()
       }
-      
-      await DatabaseHandler.updateStudent(student.id, updates)
-      // Success - close panel (Redux will update via listeners)
-      onClose()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update student')
+      setError(err instanceof Error ? err.message : mode === 'create' ? 'Failed to create student' : 'Failed to update student')
     } finally {
       setIsSaving(false)
     }
   }
   
   const handleDelete = async () => {
+    if (!student) return
+    
     setError(null)
     setIsDeleting(true)
     
@@ -83,13 +108,13 @@ const StudentSidePanel = ({
     }
   }
   
-  const primaryGuardian = guardians.find(g => g.students[student.id]?.isPrimaryGuardian)
-  const secondaryGuardians = guardians.filter(g => !g.students[student.id]?.isPrimaryGuardian)
+  const primaryGuardian = student ? guardians.find(g => g.students[student.id]?.isPrimaryGuardian) : undefined
+  const secondaryGuardians = student ? guardians.filter(g => !g.students[student.id]?.isPrimaryGuardian) : []
   
   return (
     <div className="w-96 bg-white shadow-lg h-full flex flex-col">
       <div className="p-4 border-b flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Edit Student</h2>
+        <h2 className="text-xl font-semibold">{mode === 'create' ? 'Add Student' : 'Edit Student'}</h2>
         <button
           onClick={onClose}
           className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
@@ -107,10 +132,10 @@ const StudentSidePanel = ({
           )}
           
           <div className="flex justify-center mb-4">
-            {student.pictureUrl ? (
+            {formData.pictureUrl && mode === 'edit' ? (
               <img
-                src={student.pictureUrl}
-                alt={student.name}
+                src={formData.pictureUrl}
+                alt={formData.name}
                 className="w-24 h-24 rounded-full object-cover"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement
@@ -121,7 +146,7 @@ const StudentSidePanel = ({
               />
             ) : null}
             <div className={`w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center ${
-              student.pictureUrl ? 'hidden' : ''
+              formData.pictureUrl && mode === 'edit' ? 'hidden' : ''
             }`}>
               <User className="w-12 h-12 text-gray-400" />
             </div>
@@ -238,7 +263,7 @@ const StudentSidePanel = ({
                     Saving...
                   </>
                 ) : (
-                  'Save Changes'
+                  mode === 'create' ? 'Create Student' : 'Save Changes'
                 )}
               </button>
               <button
@@ -251,15 +276,17 @@ const StudentSidePanel = ({
               </button>
             </div>
             
-            <button
-              type="button"
-              onClick={() => setShowDeleteConfirm(true)}
-              className="w-full bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
-              disabled={isSaving || isDeleting}
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Delete Student
-            </button>
+            {mode === 'edit' && (
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(true)}
+                className="w-full bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
+                disabled={isSaving || isDeleting}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete Student
+              </button>
+            )}
           </div>
         </form>
       </div>
@@ -270,7 +297,7 @@ const StudentSidePanel = ({
           <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
             <h3 className="text-lg font-semibold mb-4">Confirm Delete</h3>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to delete <span className="font-semibold">{student.name}</span>? 
+              Are you sure you want to delete <span className="font-semibold">{student?.name || 'this student'}</span>? 
               This action cannot be undone.
             </p>
             
