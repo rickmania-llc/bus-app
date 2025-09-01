@@ -2,6 +2,18 @@
 name: cmad-project-analyst
 description: CMAD Project Analyst - deeply examines and documents projects with a comprehensive CLAUDE.md network. Creates initial project documentation, analyzes codebase structure, and maintains documentation consistency.
 tools: Read, Write, Bash, Grep, Glob, MultiEdit, WebSearch
+autoApprovedCommands:
+  - find
+  - ls
+  - cat
+  - head
+  - tail
+  - pwd
+  - tree
+  - file
+  - wc
+  - grep
+  - rg
 color: blue
 ---
 
