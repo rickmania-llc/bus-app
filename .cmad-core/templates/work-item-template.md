@@ -66,9 +66,10 @@ VALID SUB-PHASES (use these exact phrases in Current Status Sub-Phase field):
 
 ```markdown
 ### Phase 1: Work Item Definition
-- [x] Work item structure created
-- [x] Goals documented
-- [x] Complete (human approved)
+VALID SUB-PHASES (use these exact phrases in Current Status Sub-Phase field):
+- [ ] Work item structure created
+- [ ] Goals documented
+- [ ] Complete (human approved)
 
 **Updates:**
 - 2024-01-01 10:00 UTC - cmad-agent-boss: Phase started
@@ -80,14 +81,26 @@ VALID SUB-PHASES (use these exact phrases in Current Status Sub-Phase field):
 ---
 
 ### Phase 2: Research
-VALID SUB-PHASES:
-- [x] Research requirements defined
-- [x] Document 1: authentication-analysis complete
-- [x] Document 2: competitor-review complete
-- [x] Complete (human approved)
+VALID SUB-PHASES (use these exact phrases in Current Status Sub-Phase field):
+- [ ] Creating research requirements (AWAITING HUMAN INPUT)
+- [ ] Research requirements defined (by human)
+- [ ] Document 1: {document-name} complete
+- [ ] Document 2: {document-name} complete
+- [ ] Complete (requires human approval)
+
+**CRITICAL PHASE 2 PROCESS:**
+1. Agent Boss transitions to Phase 2 and sets sub-phase to "Creating research requirements (AWAITING HUMAN INPUT)"
+2. Status MUST be set to "Awaiting Human Input"
+3. Agent creates empty template at: `{work-item-dir}/research/requirements.md`
+4. Human developer fills in research requirements in `research/requirements.md` (NOT in root directory)
+5. Only AFTER human provides requirements: Research Agent begins work
+6. Research Agent conducts research based ONLY on human's requirements
+7. Research Agent creates documents as specified by human in the `research/` directory
 
 **Updates:**
-- 2024-01-02 09:00 UTC - research-agent: Phase started
+- 2024-01-02 09:00 UTC - cmad-agent-boss: Phase 2 started - awaiting human research requirements
+- 2024-01-02 10:00 UTC - Human: Provided research requirements in research/requirements.md
+- 2024-01-02 10:05 UTC - research-agent: Beginning research based on human requirements
 (etc...)
 
 ---
@@ -199,27 +212,47 @@ When creating a new work item:
 ## Templates for Sub-Documents
 
 ### goals.md Template
+
+**IMPORTANT INSTRUCTIONS FOR AGENTS:**
+- Keep goals.md CONCISE and MINIMAL
+- Only include information EXPLICITLY provided by the human
+- Do NOT infer or add additional details
+- Do NOT expand on requirements unless specifically given
+
 ```markdown
 # Work Item Goals: {ItemName}
 
 ## Objective
-{One paragraph description of what we're trying to achieve}
+{One brief paragraph using only the human's exact description}
 
 ## Success Criteria
-1. {Measurable criterion}
-2. {Measurable criterion}
-3. {Measurable criterion}
+{Only include criteria explicitly stated by human}
+1. {Criterion from human's request}
+2. {Criterion from human's request}
+3. {Criterion from human's request}
 
 ```
 
 ### research/requirements.md Template
+
+**PATH:** `{work-item-directory}/research/requirements.md`
+**IMPORTANT:** This template is created by the agent at the correct path above. The CONTENT must be filled by the HUMAN DEVELOPER, not by agents.
+
 ```markdown
 # Research Requirements
 
+## Status
+**Created:** {timestamp}
+**Status:** AWAITING HUMAN INPUT / READY FOR RESEARCH
+**Human Developer:** {name or "Please fill in requirements below"}
+
 ## Context Needed
+[TO BE PROVIDED BY HUMAN DEVELOPER]
 What information do we need to gather before we can architect and implement this feature?
 
 ## Research Tasks
+[TO BE PROVIDED BY HUMAN DEVELOPER]
+
 1. **Task:** {Description}
    **Purpose:** {Why we need this}
    **Output:** {What artifact will be produced}
@@ -228,6 +261,9 @@ What information do we need to gather before we can architect and implement this
    **Purpose:** {Why we need this}
    **Output:** {What artifact will be produced}
 
+## Instructions for Human Developer
+Please replace the placeholder sections above with specific research requirements.
+Once complete, update the Status to "READY FOR RESEARCH" and notify the Research Agent.
 ```
 
 ## Agent Responsibilities by Phase
@@ -238,9 +274,11 @@ What information do we need to gather before we can architect and implement this
 - Documents initial goals
 
 ### Phase 2: Research Agent
-- Creates research requirements
-- Conducts research
-- Documents findings
+- WAITS for human to provide research requirements first
+- Agent creates template file at `{work-item}/research/requirements.md` for human to fill
+- Human fills in research requirements in `research/requirements.md` (inside research/ subdirectory)
+- Only after requirements are provided: Conducts research
+- Documents findings based on human's requirements in `research/` directory
 - Updates status on completion
 
 ### Phase 3: Architecture Agent
