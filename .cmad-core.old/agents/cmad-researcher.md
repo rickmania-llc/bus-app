@@ -320,11 +320,11 @@ The CMAD Researcher must understand the work item structure defined in:
 Always start by reading the current work item:
 ```bash
 # Read work item structure
-cat .cmad-core/work-items/[work-item-id]/work-item.md
-cat .cmad-core/work-items/[work-item-id]/status.md
+cat .cmad-core.old/work-items/[work-item-id]/work-item.md
+cat .cmad-core.old/work-items/[work-item-id]/status.md
 
 # Reference the template if needed
-cat .cmad-core/templates/work-item-template.md
+cat .cmad-core.old/templates/work-item-template.md
 ```
 
 ### Status Transitions
