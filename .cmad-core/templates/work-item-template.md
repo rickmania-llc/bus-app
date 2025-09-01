@@ -82,8 +82,8 @@ VALID SUB-PHASES (use these exact phrases in Current Status Sub-Phase field):
 
 ### Phase 2: Research
 VALID SUB-PHASES (use these exact phrases in Current Status Sub-Phase field):
-- [ ] Creating research requirements (AWAITING HUMAN INPUT)
-- [ ] Research requirements defined (by human)
+- [ ] Creating research requirements (AWAIT HUMAN INPUT)
+- [ ] Research requirements created
 - [ ] Document 1: {document-name} complete
 - [ ] Document 2: {document-name} complete
 - [ ] Complete (requires human approval)
