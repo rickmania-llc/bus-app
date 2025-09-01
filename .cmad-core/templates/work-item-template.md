@@ -198,7 +198,7 @@ When creating a new work item:
 ## Status Update Log
 
 ### Phase 1: Work Item Definition
-- [x] Work item structure created
+- [ ] Work item structure created
 - [ ] Goals documented
 - [ ] Complete (requires human approval)
 
@@ -275,8 +275,8 @@ Once complete, update the Status to "READY FOR RESEARCH" and notify the Research
 
 ### Phase 2: Research Agent
 - WAITS for human to provide research requirements first
-- Agent creates template file at `{work-item}/research/requirements.md` for human to fill
-- Human fills in research requirements in `research/requirements.md` (inside research/ subdirectory)
+- Agent creates template file at `{work-item}/research/requirements.md`
+- After human input, write requirements in `research/requirements.md` (inside research/ subdirectory)
 - Only after requirements are provided: Conducts research
 - Documents findings based on human's requirements in `research/` directory
 - Updates status on completion
