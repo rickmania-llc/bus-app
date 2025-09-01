@@ -96,7 +96,6 @@ VALID SUB-PHASES:
 ### Status Values
 
 #### Phases
-- **Phase 0:** Documentation Network
 - **Phase 1:** Work Item Definition  
 - **Phase 2:** Research
 - **Phase 3:** Architecture
