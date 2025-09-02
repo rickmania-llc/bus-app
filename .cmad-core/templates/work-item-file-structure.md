@@ -30,7 +30,7 @@ This template defines the standard directory structure for CMAD work items. Each
 **goals.md**
 - Contains work item objectives and success criteria
 - Created in Phase 1 by Agent Boss
-- Should only include information explicitly provided by human
+- Use the human’s wording as the foundation; allow light expansion for clarity and concise, outcome‑focused inferred success criteria
 
 **status.md**
 - Single source of truth for work item progress
@@ -80,11 +80,11 @@ This template defines the standard directory structure for CMAD work items. Each
 
 ## Directory Creation Rules
 
-1. **Initial Creation**: Only create root directory and initial files during Phase 1
-2. **Subdirectory Creation**: Create phase-specific directories only when entering that phase
-3. **File Naming**: Use descriptive names with appropriate prefixes (e.g., `document-1-`, `epic-`, `story-`)
-4. **Path Consistency**: All work item files MUST be within the work item directory structure
-5. **No External Files**: Never create work item documents outside this structure
+1. **Initial Creation**: Create the work item root and all standard subdirectories during Phase 1 for consistency (`research/`, `architecture/`, `epics/`, `stories/`, `stories/completed/`).
+2. **Phase Artifacts**: Populate phase-specific documents when entering that phase (e.g., research docs in Phase 2).
+3. **File Naming**: Use descriptive names with appropriate prefixes (e.g., `document-1-`, `epic-`, `story-`).
+4. **Path Consistency**: All work item files MUST be within the work item directory structure.
+5. **No External Files**: Never create work item documents outside this structure.
 
 ## File Location Examples
 

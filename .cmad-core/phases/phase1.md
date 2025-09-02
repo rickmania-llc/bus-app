@@ -79,12 +79,12 @@ The following are the ONLY valid values for the Sub-Phase field in status.md dur
      2. {Criterion from human's request}
      ```
 
-2. **CRITICAL RULES for goals.md**
-   - DO NOT infer or expand on requirements
-   - DO NOT add details not explicitly provided
-   - DO NOT create additional success criteria
-   - ONLY use information directly from human's request
-   - Keep it CONCISE and MINIMAL
+    2. **Goals Authoring Guidelines (updated)**
+       - Use the human's wording as the foundation for the Objective
+       - Light expansion is allowed to clarify scope and intent
+       - You MAY infer a short, concrete Success Criteria list based on context
+       - Keep it concise; avoid locking in implementation details prematurely
+       - Clearly reflect the product/user outcomes the human intends
 
 3. **Update status.md after completion**
    - Check off `[x] Goals documented` in Phase 1 checklist
@@ -121,4 +121,3 @@ The following are the ONLY valid values for the Sub-Phase field in status.md dur
    - Inform human that Phase 1 is complete
 
 **IMPORTANT:** Agent Boss must NEVER mark this complete without explicit human approval in the conversation.
-
