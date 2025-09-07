@@ -35,6 +35,8 @@ class DatabaseHandler {
     }
   }
 
+  // TODO breakup models into different files
+
   private static initStudentListeners() {
     const listenerKey = `students-${this.tenant}`;
     
