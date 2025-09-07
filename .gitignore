@@ -84,3 +84,4 @@ common/types/*.js.map
 # IDE folders
 .idea/
 .claude
+.cmad-core
